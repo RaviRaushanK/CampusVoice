@@ -8,9 +8,14 @@
     "dev:frontend": "vite frontend --host 0.0.0.0 --port 5173",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "start": "node server.js",
-    "build:frontend": "vite build frontend --outDir dist",
+    "build:frontend": "vite build --outDir dist",
     "preview:frontend": "vite preview frontend --port 4173",
-    "check:backend": "node --check app.js && node --check server.js && node --check config/env.js && node --check config/db.js"
+    "check:backend": "node scripts/checkBackend.js",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "vitest run --config vitest.backend.config.mjs",
+    "test:frontend": "vitest run --config vitest.config.mjs",
+    "test:browser": "node tests/browser/auth.browser.js",
+    "seed:principal": "node seeders/seedPrincipal.js"
   },
   "keywords": [
     "mern",
@@ -22,15 +27,27 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "concurrently": "^8.2.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
+    "express-rate-limit": "^8.7.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.5.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.18.4",
     "vite": "^8.3.3"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.3",
+    "jsdom": "^29.1.1",
+    "mongodb-connection-string-url": "^3.0.2",
+    "playwright": "^1.64.1",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
   }
 }
