@@ -319,6 +319,14 @@ a {
   gap: 0.75rem;
 }
 
+.profile-details {
+  overflow-wrap: anywhere;
+}
+
+.profile-details .btn .loading-state {
+  color: inherit;
+}
+
 .loading-state {
   display: inline-flex;
   align-items: center;

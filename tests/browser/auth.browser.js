@@ -86,6 +86,7 @@ const run = async () => {
 
   for (const width of [1440, 1024, 768, 375, 320]) {
     database.assertConnection(mongoose.connection);
+    await User.updateMany({}, { $set: { passwordHash, mustChangePassword: false } });
     await User.updateOne({ userCode: "browser.principal" }, { $set: { passwordHash, mustChangePassword: true } });
     const context = await browser.newContext({ viewport: { width, height: 900 } });
     const page = await context.newPage();
@@ -93,7 +94,7 @@ const run = async () => {
     page.on("console", message => {
       if (message.type() === "error" && !message.text().includes("401 (Unauthorized)")) errors.push(message.text());
     });
-    await page.goto(`${frontendOrigin}/principal/dashboard`);
+    await page.goto(`${frontendOrigin}/profile`);
     await page.getByRole("heading", { name: "Welcome back" }).waitFor();
     await checkLayout(page);
     await page.screenshot({ path: resolve(artifacts, `login-${width}.png`), fullPage: true });
@@ -122,8 +123,55 @@ const run = async () => {
       if (width < 992) {
         await page.getByRole("button", { name: "Open navigation", exact: true }).click();
         await page.locator(".app-sidebar.is-open").waitFor();
-        await page.getByRole("button", { name: "Close navigation", exact: true }).first().click();
       }
+      const profileResponse = page.waitForResponse(response => response.url() === `${apiOrigin}/api/profile`);
+      await page.getByRole("link", { name: "Profile", exact: true }).click();
+      await page.waitForURL("**/profile");
+      await page.getByRole("heading", { name: "My Profile", exact: true }).waitFor();
+      const response = await profileResponse;
+      assert.equal(response.status(), 200);
+      const data = (await response.json()).data;
+      assert.equal(data.role, role);
+      assert.equal(data.userCode, `browser.${role.toLowerCase()}`);
+      assert.deepEqual(Object.keys(data).sort(), ["name", "userCode", "email", "role", "isActive", "departmentId", "semester", "section", "lastLoginAt", "createdAt"].sort());
+      await page.getByText(data.userCode, { exact: true }).waitFor();
+      await checkLayout(page);
+      await page.screenshot({ path: resolve(artifacts, `profile-${role.toLowerCase()}-${width}.png`), fullPage: true });
+      await page.reload();
+      await page.getByText(data.userCode, { exact: true }).waitFor();
+      await page.getByRole("button", { name: "Edit Profile", exact: true }).click();
+      assert.equal(await page.getByLabel("Name", { exact: true }).inputValue(), data.name);
+      await page.getByLabel("Name", { exact: true }).fill("Unsaved Name");
+      await page.getByRole("button", { name: "Cancel", exact: true }).click();
+      await page.getByRole("heading", { name: data.name, exact: true }).waitFor();
+      await page.getByRole("button", { name: "Edit Profile", exact: true }).click();
+      const updatedName = `Updated ${role} ${width}`;
+      const updatedEmail = `${role.toLowerCase()}.${width}.${"long".repeat(9)}@campus.example.edu`;
+      await page.getByLabel("Name", { exact: true }).fill(updatedName);
+      await page.getByLabel("Email", { exact: true }).fill(updatedEmail);
+      await checkLayout(page);
+      await page.screenshot({ path: resolve(artifacts, `profile-edit-${role.toLowerCase()}-${width}.png`), fullPage: true });
+      const patchResponse = page.waitForResponse(response => response.url() === `${apiOrigin}/api/profile` && response.request().method() === "PATCH");
+      await page.getByRole("button", { name: "Save Changes", exact: true }).click();
+      assert.equal((await patchResponse).status(), 200);
+      await page.getByText("Profile updated successfully.", { exact: true }).waitFor();
+      await page.locator(".app-navbar").getByText(updatedName, { exact: true }).waitFor();
+      await page.getByText(updatedEmail, { exact: true }).waitFor();
+      await checkLayout(page);
+      await page.screenshot({ path: resolve(artifacts, `profile-saved-${role.toLowerCase()}-${width}.png`), fullPage: true });
+      await page.reload();
+      await page.getByText(updatedEmail, { exact: true }).waitFor();
+      const oldCookie = (await context.cookies(apiOrigin)).find(cookie => cookie.name === "cv_auth");
+      await page.getByRole("region", { name: "Security", exact: true }).getByRole("link", { name: "Change Password", exact: true }).click();
+      await page.waitForURL("**/change-password");
+      await page.getByText("Change your password", { exact: true }).waitFor();
+      await page.getByLabel("Current password", { exact: true }).fill(role === "PRINCIPAL" ? newPassword : temporaryPassword);
+      const voluntaryPassword = `Voluntary_${role}_${width}!`;
+      await page.getByLabel("New password", { exact: true }).fill(voluntaryPassword);
+      await page.getByLabel("Confirm new password", { exact: true }).fill(voluntaryPassword);
+      await page.getByRole("button", { name: "Update password", exact: true }).click();
+      await waitForDashboard(page, role);
+      assert.equal((await fetch(`${apiOrigin}/api/profile`, { headers: { Cookie: `cv_auth=${oldCookie.value}` } })).status, 401);
       assert.equal(await page.getByRole("link", { name: "Change password", exact: true }).count(), 1);
       for (const target of roles.filter(target => target !== role)) {
         await page.goto(`${frontendOrigin}/${target.toLowerCase()}/dashboard`);
@@ -136,7 +184,7 @@ const run = async () => {
       await page.getByRole("heading", { name: "Welcome back" }).waitFor();
       assert.equal((await context.cookies(apiOrigin)).some(cookie => cookie.name === "cv_auth"), false);
     }
-    console.log(`PASS: live login, cookies, redirects, four dashboards, reload and logout at ${width}px`);
+    console.log(`PASS: four roles, dashboards, profile view/edit/cancel/save, shared UI sync, forced/voluntary password change, token revocation and logout at ${width}px`);
     await context.close();
   }
   assert.deepEqual(errors, [], "Unexpected browser console/runtime errors");

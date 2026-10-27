@@ -5,6 +5,7 @@ const ROLE_DASHBOARD = { PRINCIPAL: "/principal/dashboard", HOD: "/hod/dashboard
 export const getDashboardPath = role => ROLE_DASHBOARD[role] || "/login";
 export const AuthProvider = ({ children }) => {
   const revision = useRef(0);
+  const profileRevision = useRef(0);
   const operationInProgress = useRef(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,7 +14,16 @@ export const AuthProvider = ({ children }) => {
   const restoreSession = useCallback(async () => {
     if (operationInProgress.current) return;
     const currentRevision = ++revision.current;
-    try { const result = await auth.me(); if (revision.current === currentRevision) { setUser(result.data); setError(""); } }
+    const currentProfileRevision = profileRevision.current;
+    try {
+      const result = await auth.me();
+      if (revision.current === currentRevision) {
+        // An older refresh may carry stale name/email, but its security state still applies.
+        setUser(current => currentProfileRevision !== profileRevision.current && current?.userCode === result.data.userCode
+          ? { ...result.data, name: current.name, email: current.email } : result.data);
+        setError("");
+      }
+    }
     catch (err) {
       if (revision.current === currentRevision) {
         if (err.status === 401) {
@@ -55,6 +65,14 @@ export const AuthProvider = ({ children }) => {
     } catch (err) { setUser(null); return { ok: false, error: err.message }; }
     finally { revision.current++; operationInProgress.current = false; setLoading(false); }
   };
+  // Only pass the confirmed profile API response here; keep authentication state intact.
+  const syncProfile = (profile) => {
+    if (operationInProgress.current) return;
+    profileRevision.current++;
+    setUser(current => current && current.userCode === profile.userCode
+      ? { ...current, name: profile.name, email: profile.email }
+      : current);
+  };
   const doChangePassword = async (...args) => {
     operationInProgress.current = true;
     revision.current++;
@@ -78,7 +96,7 @@ export const AuthProvider = ({ children }) => {
     }
     finally { revision.current++; operationInProgress.current = false; setLoggingOut(false); }
   };
-  return <AuthContext.Provider value={{ user, loading, error, loggingOut, needsPasswordChange: Boolean(user?.mustChangePassword), doLogin, doChangePassword, doLogout, restoreSession, getDashboardPath }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, loading, error, loggingOut, needsPasswordChange: Boolean(user?.mustChangePassword), doLogin, doChangePassword, doLogout, restoreSession, syncProfile, getDashboardPath }}>{children}</AuthContext.Provider>;
 };
 export const useAuth = () => {
   const context = useContext(AuthContext);

@@ -239,8 +239,16 @@ npx playwright install chromium
 
 `npm run test:browser` starts its own local API and Vite servers on available ports and uses a uniquely named `campusvoice_test_browser_*` database. It verifies real login, first-login password changes, HTTP-only cookies, restored sessions, all cross-role redirects, four dashboards and logout at 1440, 1024, 768, 375 and 320 pixels. It also checks horizontal overflow, clipped controls, mobile navigation, icon font loading and browser errors. Screenshots go into the ignored `test-results/browser/` directory. The browser, servers and temporary database are cleaned up on completion or failure. This command never seeds the normal development database.
 
+## Profile and account management
+
+All four roles use `/profile` to view their account, edit their name and optional email, and open the existing password-change flow. `GET /api/profile` and `PATCH /api/profile` reuse authentication and the forced-password-change guard. PATCH accepts only name and email; unsupported fields are rejected. Emails are trimmed and lowercased; blank or null email removes the optional address. Successful updates synchronize the shared user name and email from the server response without changing authentication state.
+
+The User schema declares a unique partial email index for populated string addresses. Profile writes await index initialization and return a clean conflict for duplicate addresses, including concurrent claims. Existing databases must have no duplicate populated emails before that index can build; resolve any legacy duplicates through the normal administrator review process. This change does not migrate or rewrite existing records.
+
+Profile tests use the same mandatory `TEST_MONGODB_URI` and guarded isolated databases as authentication tests. Browser checks cover view/edit modes, save/cancel, long emails, shared navbar synchronization, and the existing voluntary password-change flow for all four roles at all five viewport sizes.
+
 ## Scope and next phase
 
 Phase 1 architecture, shared components, health endpoint and four dashboard layouts are retained. Department/HOD creation, faculty/student management, subjects, assignments, feedback, suggestions, complaints/routing/escalation, notifications, analytics and DSA features are not implemented.
 
-Next phase: **Department and HOD Management**. Authentication work stays on `feature/auth` for review and integration into `develop`; it is not merged into `main`.
+Next phase: **Department and HOD Management**. Profile/account management is implemented on `feature/profile-management`; no later-phase functionality is included.

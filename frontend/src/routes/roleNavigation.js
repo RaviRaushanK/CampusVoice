@@ -1,6 +1,8 @@
 const navigation = (role, items) => [
   { label: "Dashboard", icon: "bi-speedometer2", path: `/${role}/dashboard` },
-  ...items.map(([label, icon]) => ({ label, icon, disabled: true })),
+  ...items.map(([label, icon]) => label === "Profile"
+    ? { label, icon, path: "/profile" }
+    : { label, icon, disabled: true }),
   { label: "Change password", icon: "bi-key", path: "/change-password" },
   { label: "Logout", icon: "bi-box-arrow-right", action: "logout" },
 ];

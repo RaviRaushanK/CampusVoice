@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import { request } from "./apiClient";
+import { updateProfile } from "./profileService";
 afterEach(() => vi.unstubAllGlobals());
 it("sends cookies and a non-simple CSRF header for state changes", async () => {
   const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }); vi.stubGlobal("fetch", fetch);
@@ -22,4 +23,13 @@ it("can restore a missing session without displaying an expiry event on a fresh 
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401, json: async () => ({ message: "Sign in" }) }));
   await expect(request("/auth/me", { notifyAuthFailure: false })).rejects.toMatchObject({ status: 401 });
   expect(handler).not.toHaveBeenCalled(); window.removeEventListener("auth:expired", handler);
+});
+it("profile PATCH reuses cookies and CSRF and sends only supported fields", async () => {
+  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { name: "Updated" } }) });
+  vi.stubGlobal("fetch", fetch);
+  await updateProfile({ name: "Updated", email: null, role: "PRINCIPAL" });
+  const [url, options] = fetch.mock.calls[0];
+  expect(url.endsWith("/api/profile")).toBe(true);
+  expect(options).toMatchObject({ method: "PATCH", credentials: "include", headers: { "X-CSRF-Protection": "1" } });
+  expect(JSON.parse(options.body)).toEqual({ name: "Updated", email: null });
 });

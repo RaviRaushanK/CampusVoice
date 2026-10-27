@@ -16,6 +16,8 @@ const schema = new mongoose.Schema({
   lastLoginAt: { type: Date, default: null },
   tokenVersion: { type: Number, default: 0, min: 0, select: false },
 }, { timestamps: true });
+// Missing, null and empty optional emails do not reserve an address.
+schema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: "string", $gt: "" } } });
 // Security changes revoke existing cookies even if the account is later reactivated.
 schema.pre("save", function (next) {
   if (!this.isNew && ["passwordHash", "role", "isActive"].some(field => this.isModified(field))) this.$inc("tokenVersion", 1);

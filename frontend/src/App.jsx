@@ -11,6 +11,13 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import Login from "./pages/auth/Login";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import Profile from "./pages/profile/Profile";
+
+const ProfileLayout = () => {
+  const { user } = useAuth();
+  const Layout = { PRINCIPAL: PrincipalLayout, HOD: HodLayout, FACULTY: FacultyLayout, STUDENT: StudentLayout }[user.role];
+  return <Layout />;
+};
 
 const DashboardRedirect = () => {
   const { user, getDashboardPath } = useAuth();
@@ -23,6 +30,9 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ProtectedRoute allowPasswordChange><ChangePassword /></ProtectedRoute>} />
+        <Route element={<ProtectedRoute><ProfileLayout /></ProtectedRoute>}>
+          <Route path="/profile" element={<Profile />} />
+        </Route>
 
         <Route
           path="/principal"
