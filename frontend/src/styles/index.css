@@ -374,6 +374,35 @@ a {
   white-space: pre-wrap;
 }
 
+.academic-page,
+.academic-dashboard,
+.academic-page .panel,
+.academic-page td {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.academic-page select {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.academic-table-container {
+  max-width: 100%;
+}
+
+.academic-table {
+  min-width: 640px;
+}
+
+.academic-table td {
+  max-width: 260px;
+}
+
+.academic-page .btn .loading-state {
+  color: inherit;
+}
+
 .notifications-page .btn .loading-state {
   color: inherit;
 }

@@ -10,6 +10,7 @@ const schema = new mongoose.Schema({
   departmentId: { type: mongoose.Schema.Types.ObjectId, ref: "Department", default: null },
   semester: { type: Number, min: 1, max: 8, default: null },
   section: { type: String, trim: true, maxlength: 20, default: null },
+  batch: { type: String, default: null, match: /^\d{4}-\d{4}$/ },
   isActive: { type: Boolean, default: true },
   mustChangePassword: { type: Boolean, default: true },
   passwordChangedAt: { type: Date, default: null },
@@ -18,16 +19,19 @@ const schema = new mongoose.Schema({
 }, { timestamps: true });
 // Missing, null and empty optional emails do not reserve an address.
 schema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: "string", $gt: "" } } });
+schema.index({ departmentId: 1, role: 1, name: 1 });
+schema.index({ departmentId: 1 }, { unique: true, name: "one_active_hod_per_department",
+  partialFilterExpression: { role: "HOD", isActive: true, departmentId: { $type: "objectId" } } });
 // Security changes revoke existing cookies even if the account is later reactivated.
 schema.pre("save", function (next) {
-  if (!this.isNew && ["passwordHash", "role", "isActive"].some(field => this.isModified(field))) this.$inc("tokenVersion", 1);
+  if (!this.isNew && ["passwordHash", "role", "isActive", "departmentId"].some(field => this.isModified(field))) this.$inc("tokenVersion", 1);
   next();
 });
 for (const operation of ["updateOne", "updateMany", "findOneAndUpdate"]) {
   schema.pre(operation, function (next) {
     const update = this.getUpdate();
     if (Array.isArray(update)) return next(new Error("User security updates must use update operators."));
-    if (["passwordHash", "role", "isActive"].some(field => Object.hasOwn(update, field) || Object.hasOwn(update.$set || {}, field) || Object.hasOwn(update.$unset || {}, field))) {
+    if (["passwordHash", "role", "isActive", "departmentId"].some(field => Object.hasOwn(update, field) || Object.hasOwn(update.$set || {}, field) || Object.hasOwn(update.$unset || {}, field))) {
       update.$inc = { ...update.$inc, tokenVersion: 1 };
     }
     next();

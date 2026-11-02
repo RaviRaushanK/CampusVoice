@@ -1,8 +1,9 @@
+const academicPaths = { principal: { Departments: "/departments", HODs: "/hods" }, hod: { Faculty: "/faculty", Students: "/students", Subjects: "/subjects", Classes: "/classes", "Faculty Assignments": "/faculty-assignments" }, faculty: { "My Subjects": "/my-assignments" } };
 const navigation = (role, items) => [
   { label: "Dashboard", icon: "bi-speedometer2", path: `/${role}/dashboard` },
   ...items.map(([label, icon]) => ["Profile", "Notifications"].includes(label)
     ? { label, icon, path: label === "Profile" ? "/profile" : "/notifications" }
-    : { label, icon, disabled: true }),
+    : academicPaths[role]?.[label] ? { label: role === "faculty" ? "My Assignments" : label, icon, path: academicPaths[role][label] } : { label, icon, disabled: true }),
   { label: "Change password", icon: "bi-key", path: "/change-password" },
   { label: "Logout", icon: "bi-box-arrow-right", action: "logout" },
 ];

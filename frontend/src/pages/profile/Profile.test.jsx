@@ -7,6 +7,8 @@ import { AuthProvider } from "../../context/AuthContext";
 import * as service from "../../services/profileService";
 import * as auth from "../../services/authService";
 import * as notifications from "../../services/notificationService";
+import * as academic from "../../services/academicService";
+vi.mock("../../services/academicService", () => ({ getAcademicDashboard: vi.fn() }));
 vi.mock("../../services/notificationService", () => ({ getUnreadCount: vi.fn() }));
 vi.mock("../../services/profileService", () => ({ getProfile: vi.fn(), updateProfile: vi.fn() }));
 vi.mock("../../services/authService", () => ({ me: vi.fn(), login: vi.fn(), logout: vi.fn(), changePassword: vi.fn() }));
@@ -15,6 +17,7 @@ const profile = { name: "Ravi Raushan Kumar", userCode: "student001", email: "ra
 const open = path => render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
 beforeEach(() => auth.me.mockResolvedValue({ data: profile }));
 beforeEach(() => notifications.getUnreadCount.mockResolvedValue({ data: { count: 0 } }));
+beforeEach(() => academic.getAcademicDashboard.mockResolvedValue({ data: { metrics: {} } }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 it("shows the shared loading state", () => {
   service.getProfile.mockReturnValue(new Promise(() => {})); render(<MemoryRouter><AuthProvider><Profile /></AuthProvider></MemoryRouter>);

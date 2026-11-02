@@ -5,6 +5,8 @@ import { vi } from "vitest";
 import App from "../../App";
 import * as auth from "../../services/authService";
 import * as service from "../../services/notificationService";
+import * as academic from "../../services/academicService";
+vi.mock("../../services/academicService", () => ({ getAcademicDashboard: vi.fn() }));
 vi.mock("../../services/authService", () => ({ me: vi.fn(), login: vi.fn(), logout: vi.fn(), changePassword: vi.fn() }));
 vi.mock("../../services/notificationService", () => ({ getNotifications: vi.fn(), getUnreadCount: vi.fn(), markNotificationRead: vi.fn(), markAllNotificationsRead: vi.fn() }));
 const user = { id: "viewer", userCode: "viewer", name: "Notification Viewer", role: "STUDENT", mustChangePassword: false };
@@ -21,6 +23,7 @@ const open = (path = "/notifications", strict = false) => render(<MemoryRouter i
 const filter = name => fireEvent.click(within(screen.getByRole("group", { name: "Filter notifications" })).getByRole("button", { name, exact: true }));
 const loaded = () => screen.findByRole("article", { name: "Notice 1" });
 beforeEach(() => {
+  academic.getAcademicDashboard.mockResolvedValue({ data: { metrics: {} } });
   items = [item(), item(2, { isRead: true, type: "ACCOUNT" })];
   auth.me.mockResolvedValue({ data: user });
   service.getUnreadCount.mockImplementation(async () => ({ data: { count: items.filter(n => !n.isRead).length } }));

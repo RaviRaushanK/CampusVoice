@@ -5,12 +5,15 @@ import { vi } from "vitest";
 import App from "../App";
 import * as auth from "../services/authService";
 import * as notifications from "../services/notificationService";
+import * as academic from "../services/academicService";
+vi.mock("../services/academicService", () => ({ getAcademicDashboard: vi.fn() }));
 vi.mock("../services/notificationService", () => ({ getUnreadCount: vi.fn() }));
 vi.mock("../services/authService", () => ({ me: vi.fn(), login: vi.fn(), logout: vi.fn(), changePassword: vi.fn() }));
 const roles = ["PRINCIPAL", "HOD", "FACULTY", "STUDENT"];
 const profile = (role = "PRINCIPAL", mustChangePassword = false) => ({ name: "Authenticated User", role, mustChangePassword, userCode: "test1" });
 const open = path => render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
 beforeEach(() => notifications.getUnreadCount.mockResolvedValue({ data: { count: 0 } }));
+beforeEach(() => academic.getAcademicDashboard.mockResolvedValue({ data: { metrics: {} } }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.useRealTimers(); });
 it.each(roles)("direct %s dashboard URL requires authentication", async role => {
   auth.me.mockRejectedValue({ status: 401 }); open(`/${role.toLowerCase()}/dashboard`);
@@ -82,7 +85,7 @@ it("expired-session events remove protected content", async () => {
 it.each(roles)("%s keeps role-specific future navigation visible but disabled", async role => {
   auth.me.mockResolvedValue({ data: profile(role) }); open(`/${role.toLowerCase()}/dashboard`);
   await screen.findByText("No recent activity yet");
-  const expected = { PRINCIPAL: "Departments", HOD: "Faculty Assignments", FACULTY: "My Subjects", STUDENT: "Give Feedback" };
+  const expected = { PRINCIPAL: "Complaints", HOD: "Academic Feedback", FACULTY: "Feedback Sessions", STUDENT: "Give Feedback" };
   const placeholder = screen.getByRole("button", { name: expected[role] });
   expect(placeholder.disabled).toBe(true);
   expect(screen.queryByRole("link", { name: expected[role] })).toBeNull();

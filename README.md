@@ -2,7 +2,7 @@
 
 College Feedback, Survey and Grievance Management System built with the MERN stack.
 
-Phase 2 adds authentication, first-login password changes, role-based access control and protected dashboards to the existing Phase 1 foundation.
+The foundation includes authentication/RBAC, profile/account management, shared notifications, and college/academic management.
 
 ## Technology Stack
 
@@ -270,6 +270,32 @@ Notification fixtures are created only in guarded, isolated test databases using
 
 ## Scope and next phase
 
-Phase 1 architecture, shared components, health endpoint and four dashboard layouts are retained. Department/HOD creation, faculty/student management, subjects, assignments, feedback, suggestions, complaints/routing/escalation, analytics and DSA features are not implemented.
+Phase 1–4 authentication, profile, notification, shared-layout and health behavior is retained. Feedback sessions, general feedback, suggestions, complaints, analytics and DSA features are not implemented.
 
-Phase 4 provides shared notification infrastructure and UI. Later module integrations remain outside this phase.
+Phase 5 supplies the academic foundation required by later feedback/session modules. It does not generate business notifications or implement those later modules.
+
+## College and academic management
+
+Principal manages Departments and HOD accounts. HODs manage Faculty, Students, Subjects, Class Groups and Faculty Assignments only inside their authenticated department. Faculty have a read-only My Assignments page; Students see only their own academic information. Principal has institution-wide academic counts, without extra Faculty/Student modification rights. Every academic route reuses existing authentication, first-login restrictions and CSRF protection; unsupported/protected body fields are rejected. HOD department IDs are derived server-side, never accepted on Faculty/Student/Subject/Class/Assignment writes.
+
+| API resource | Read/write owner | UI route |
+| --- | --- | --- |
+| `/api/departments` | Principal; HOD can read own department | `/departments` |
+| `/api/hods` | Principal | `/hods` |
+| `/api/faculty` | Own-department HOD | `/faculty` |
+| `/api/students` | Own-department HOD | `/students` |
+| `/api/subjects` | Own-department HOD | `/subjects` |
+| `/api/classes` | Own-department HOD | `/classes` |
+| `/api/faculty-assignments` | Own-department HOD | `/faculty-assignments` |
+| `/api/faculty-assignments/mine` | Authenticated Faculty, read only | `/my-assignments` |
+| `/api/academic/dashboard` | Current user's authorized counts/information | Role dashboards |
+
+Management resources provide paginated GET collection, GET `/:id`, POST create and PATCH `/:id`; there is no destructive DELETE. Assignment PATCH changes only `isActive`. List defaults are page 1/limit 20, maximum limit 100/page 1,000,000, with deterministic sorting. Account lists search name/email/userCode; Subjects search code/name. Students support semester/section filters, Classes semester/section/year, and Assignments status/year. Lookups load up to 100 active matching records and provide search refinement rather than fetching entire collections. Dashboard metrics use database count queries and HOD queries always scope by department.
+
+Provisioning uses a user-entered temporary password, the existing bcrypt helper, and mandatory first-login password change. Passwords/hashes/security metadata are never included in management responses. User codes remain immutable after creation. Student USN uses the existing unique lowercase `userCode` (displayed uppercase); no independent competing USN identifier is stored. Email follows existing trimmed/lowercase uniqueness rules and remains optional. Account deactivation and HOD department reassignment revoke existing sessions. A partial unique User index permits only one active HOD per assigned Department, including concurrent requests and reactivation.
+
+Department/Subject codes normalize uppercase. Subject uniqueness is department+code; Class Group uniqueness is department+academicYear+semester+section, including inactive records. MCA semesters are 1–4. Optional sections normalize uppercase. Academic years use `YYYY-YYYY` with consecutive years (for example `2026-2027`); optional admission batches use the same format with a two-year span (for example `2025-2027`). These management rules preserve existing legacy User schema compatibility.
+
+Assignment creation/reactivation verifies an active Faculty user, Subject and Class Group in the HOD's active Department, plus matching subject/class semester and assignment/class year. A partial unique index prevents duplicate active teaching relationships. Referenced Subject semesters and Class Group identities cannot be rewritten through management updates; create a new record instead. Assignment references remain historical and immutable. Deactivating Departments/accounts/curriculum does not delete or cascade-delete history. Inactive Departments block HOD management operations; account status separately controls login. Retained active assignments with an inactive source are labelled accordingly and return `isUsable: false`; future session services must revalidate current source status before use.
+
+All academic tests and browser provisioning workflows use mandatory `TEST_MONGODB_URI` with the existing guarded isolated databases. The browser suite creates Department → HOD → Faculty/Student/Subject/Class → Assignment through the real UI at 1440/320px, verifies new-user password changes and Faculty/Student visibility, and preserves four-role regression coverage at all five widths. No development academic data is seeded. CSV/Excel student import is intentionally deferred.

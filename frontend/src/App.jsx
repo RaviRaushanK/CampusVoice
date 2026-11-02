@@ -14,6 +14,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Profile from "./pages/profile/Profile";
 import Notifications from "./pages/notifications/Notifications";
 import { NotificationProvider } from "./context/NotificationContext";
+import { Departments, Hods, Faculty, Students, Subjects, Classes, FacultyAssignments, MyAssignments } from "./pages/academic/AcademicPages";
 
 const SharedRoleLayout = () => {
   const { user } = useAuth();
@@ -36,6 +37,17 @@ const App = () => {
         <Route element={<ProtectedRoute><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/profile" element={<Profile />} />
           <Route path="/notifications" element={<Notifications />} />
+        </Route>
+        <Route element={<ProtectedRoute expectedRole="PRINCIPAL"><SharedRoleLayout /></ProtectedRoute>}>
+          <Route path="/departments" element={<Departments />} /><Route path="/hods" element={<Hods />} />
+        </Route>
+        <Route element={<ProtectedRoute expectedRole="HOD"><SharedRoleLayout /></ProtectedRoute>}>
+          <Route path="/faculty" element={<Faculty />} /><Route path="/students" element={<Students />} />
+          <Route path="/subjects" element={<Subjects />} /><Route path="/classes" element={<Classes />} />
+          <Route path="/faculty-assignments" element={<FacultyAssignments />} />
+        </Route>
+        <Route element={<ProtectedRoute expectedRole="FACULTY"><SharedRoleLayout /></ProtectedRoute>}>
+          <Route path="/my-assignments" element={<MyAssignments />} />
         </Route>
 
         <Route

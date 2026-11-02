@@ -6,6 +6,7 @@ const { resolve } = require("node:path");
 const { chromium } = require("playwright");
 const mongoose = require("mongoose");
 const { createTestDatabase } = require("../helpers/testDatabase");
+const { runAcademicWorkflow } = require("./academicWorkflow");
 require("dotenv").config();
 
 process.env.NODE_ENV = "test";
@@ -125,6 +126,8 @@ const run = async () => {
     await page.screenshot({ path: resolve(artifacts, `first-login-${width}.png`), fullPage: true });
     await page.getByRole("button", { name: "Update password", exact: true }).click();
     await waitForDashboard(page, "PRINCIPAL");
+
+    if ([1440, 320].includes(width)) await runAcademicWorkflow({ page, frontendOrigin, apiOrigin, width, principalPassword: newPassword, temporaryPassword, checkLayout, artifacts });
 
     for (const role of roles) {
       if (role !== "PRINCIPAL") { await login(page, `browser.${role.toLowerCase()}`); await waitForDashboard(page, role); }
