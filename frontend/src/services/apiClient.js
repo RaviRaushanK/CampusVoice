@@ -7,6 +7,7 @@ export const request = async (path, options = {}) => {
     headers: { "Content-Type": "application/json", ...(!["GET", "HEAD"].includes(method) ? { "X-CSRF-Protection": "1" } : {}), ...options.headers },
   });
   const data = await response.json().catch(() => ({}));
+  if (fetchOptions.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
   if (!response.ok) {
     if (response.status === 401 && notifyAuthFailure) window.dispatchEvent(new Event("auth:expired"));
     if (data.code === "PASSWORD_CHANGE_REQUIRED") window.dispatchEvent(new Event("auth:password-required"));

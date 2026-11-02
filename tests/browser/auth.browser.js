@@ -71,10 +71,13 @@ const run = async () => {
   process.env.FRONTEND_ORIGIN = frontendOrigin;
   const app = require("../../app");
   const User = require("../../models/User");
+  const Notification = require("../../models/Notification");
+  const notificationService = require("../../services/notificationService");
   const { seedPrincipal } = require("../../seeders/seedPrincipal");
   const { hashPassword } = require("../../services/authService");
   await mongoose.connect(database.uri, { serverSelectionTimeoutMS: 5000 });
   database.assertConnection(mongoose.connection);
+  await Notification.init();
   await seedPrincipal({ PRINCIPAL_NAME: "Browser Principal", PRINCIPAL_USER_CODE: "browser.principal", PRINCIPAL_PASSWORD: temporaryPassword });
   const passwordHash = await hashPassword(temporaryPassword);
   await User.create(roles.slice(1).map(role => ({ name: `Browser ${role}`, userCode: `browser.${role.toLowerCase()}`, passwordHash, role, mustChangePassword: false })));
@@ -86,6 +89,18 @@ const run = async () => {
 
   for (const width of [1440, 1024, 768, 375, 320]) {
     database.assertConnection(mongoose.connection);
+    await Notification.deleteMany({});
+    const notificationUsers = await User.find();
+    for (const notificationUser of notificationUsers) {
+      for (let index = 1; index <= 21; index++) {
+        await notificationService.createNotification({
+          recipient: notificationUser._id, type: "SYSTEM",
+          title: index === 21 ? `Long notice ${notificationUser.role} ${"title".repeat(22)}` : `Notice ${notificationUser.role} ${index}`,
+          message: index === 21 ? "LongMessage".repeat(140) : `A controlled test notification for ${notificationUser.role}.`,
+          relatedResourceType: "PROFILE", relatedResourceId: notificationUser._id,
+        });
+      }
+    }
     await User.updateMany({}, { $set: { passwordHash, mustChangePassword: false } });
     await User.updateOne({ userCode: "browser.principal" }, { $set: { passwordHash, mustChangePassword: true } });
     const context = await browser.newContext({ viewport: { width, height: 900 } });
@@ -94,7 +109,7 @@ const run = async () => {
     page.on("console", message => {
       if (message.type() === "error" && !message.text().includes("401 (Unauthorized)")) errors.push(message.text());
     });
-    await page.goto(`${frontendOrigin}/profile`);
+    await page.goto(`${frontendOrigin}/notifications`);
     await page.getByRole("heading", { name: "Welcome back" }).waitFor();
     await checkLayout(page);
     await page.screenshot({ path: resolve(artifacts, `login-${width}.png`), fullPage: true });
@@ -119,6 +134,43 @@ const run = async () => {
       assert.ok(cookies.some(cookie => cookie.name === "cv_auth" && cookie.httpOnly && cookie.expires > Date.now() / 1000));
       assert.equal(await page.evaluate(() => document.cookie.includes("cv_auth=")), false);
       assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
+
+      const bell = page.locator(".app-navbar").getByRole("link", { name: "Notifications, 21 unread", exact: true });
+      await bell.waitFor();
+      await bell.click();
+      await page.waitForURL("**/notifications");
+      await page.getByRole("heading", { name: "Notifications", exact: true }).waitFor();
+      const longNotice = page.getByRole("article", { name: `Long notice ${role} ${"title".repeat(22)}`, exact: true });
+      await longNotice.waitFor();
+      await page.getByText("Page 1 of 2", { exact: true }).waitFor();
+      await checkLayout(page);
+      await page.screenshot({ path: resolve(artifacts, `notifications-${role.toLowerCase()}-${width}.png`), fullPage: true });
+      await page.getByRole("button", { name: "Next", exact: true }).click();
+      await page.getByText("Page 2 of 2", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "Previous", exact: true }).click();
+      await longNotice.waitFor();
+      const filters = page.getByRole("group", { name: "Filter notifications", exact: true });
+      await filters.getByRole("button", { name: "Read", exact: true }).click();
+      await page.getByText("No read notifications yet.", { exact: true }).waitFor();
+      await filters.getByRole("button", { name: "Unread", exact: true }).click();
+      await longNotice.waitFor();
+      await longNotice.getByRole("button", { name: /^Mark as read:/ }).click();
+      await page.getByText("Notification marked as read.", { exact: true }).waitFor();
+      await page.locator(".app-navbar").getByRole("link", { name: "Notifications, 20 unread", exact: true }).waitFor();
+      await longNotice.waitFor({ state: "detached" });
+      await page.getByRole("button", { name: "Mark all as read", exact: true }).click();
+      await page.getByText("You're all caught up.", { exact: true }).waitFor();
+      assert.equal(await page.locator(".notification-badge").count(), 0);
+      assert.equal(await page.getByRole("button", { name: "Mark all as read", exact: true }).isDisabled(), true);
+      await checkLayout(page);
+      await page.screenshot({ path: resolve(artifacts, `notifications-empty-${role.toLowerCase()}-${width}.png`), fullPage: true });
+      await filters.getByRole("button", { name: "Read", exact: true }).click();
+      await longNotice.waitFor();
+      assert.equal(await longNotice.getByRole("button").count(), 0);
+      await filters.getByRole("button", { name: "All", exact: true }).click();
+      await longNotice.waitFor();
+      await page.goto(`${frontendOrigin}/${role.toLowerCase()}/dashboard`);
+      await waitForDashboard(page, role);
 
       if (width < 992) {
         await page.getByRole("button", { name: "Open navigation", exact: true }).click();
@@ -184,7 +236,7 @@ const run = async () => {
       await page.getByRole("heading", { name: "Welcome back" }).waitFor();
       assert.equal((await context.cookies(apiOrigin)).some(cookie => cookie.name === "cv_auth"), false);
     }
-    console.log(`PASS: four roles, dashboards, profile view/edit/cancel/save, shared UI sync, forced/voluntary password change, token revocation and logout at ${width}px`);
+    console.log(`PASS: four roles, notification bell/list/filters/pagination/read/read-all, dashboards, profile editing, password changes and logout at ${width}px`);
     await context.close();
   }
   assert.deepEqual(errors, [], "Unexpected browser console/runtime errors");

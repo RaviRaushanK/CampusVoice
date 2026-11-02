@@ -33,3 +33,18 @@ it("profile PATCH reuses cookies and CSRF and sends only supported fields", asyn
   expect(options).toMatchObject({ method: "PATCH", credentials: "include", headers: { "X-CSRF-Protection": "1" } });
   expect(JSON.parse(options.body)).toEqual({ name: "Updated", email: null });
 });
+it("a cancelled old response cannot expire a newer authenticated session", async () => {
+  const controller = new AbortController();
+  let finishBody;
+  const handler = vi.fn(); window.addEventListener("auth:expired", handler);
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401,
+    json: () => new Promise(resolve => { finishBody = resolve; }),
+  }));
+  try {
+    const pending = request("/notifications/unread-count", { signal: controller.signal });
+    await Promise.resolve();
+    controller.abort(); finishBody({ message: "Old session expired" });
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+    expect(handler).not.toHaveBeenCalled();
+  } finally { window.removeEventListener("auth:expired", handler); }
+});

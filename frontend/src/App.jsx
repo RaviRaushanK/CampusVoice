@@ -12,8 +12,10 @@ import Login from "./pages/auth/Login";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Profile from "./pages/profile/Profile";
+import Notifications from "./pages/notifications/Notifications";
+import { NotificationProvider } from "./context/NotificationContext";
 
-const ProfileLayout = () => {
+const SharedRoleLayout = () => {
   const { user } = useAuth();
   const Layout = { PRINCIPAL: PrincipalLayout, HOD: HodLayout, FACULTY: FacultyLayout, STUDENT: StudentLayout }[user.role];
   return <Layout />;
@@ -27,11 +29,13 @@ const DashboardRedirect = () => {
 const App = () => {
   return (
     <AuthProvider>
+      <NotificationProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ProtectedRoute allowPasswordChange><ChangePassword /></ProtectedRoute>} />
-        <Route element={<ProtectedRoute><ProfileLayout /></ProtectedRoute>}>
+        <Route element={<ProtectedRoute><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
 
         <Route
@@ -84,6 +88,7 @@ const App = () => {
         <Route path="/" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
         <Route path="*" element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>} />
       </Routes>
+      </NotificationProvider>
     </AuthProvider>
   );
 };

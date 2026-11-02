@@ -247,9 +247,9 @@ The User schema declares a unique partial email index for populated string addre
 
 Profile tests use the same mandatory `TEST_MONGODB_URI` and guarded isolated databases as authentication tests. Browser checks cover view/edit modes, save/cancel, long emails, shared navbar synchronization, and the existing voluntary password-change flow for all four roles at all five viewport sizes.
 
-## Shared notification backend
+## Shared notification system
 
-Notifications are generated internally by backend modules through `services/notificationService.createNotification({ recipient, type, title, message, relatedResourceType, relatedResourceId })`. Creation validates an existing User recipient, a controlled type, and trimmed nonempty title/message (maximum 160/2000 characters). There is no public creation, deletion, or content-editing endpoint. No business module generates notifications yet, and no notification UI is included.
+Notifications are generated internally by backend modules through `services/notificationService.createNotification({ recipient, type, title, message, relatedResourceType, relatedResourceId })`. Creation validates an existing User recipient, a controlled type, and trimmed nonempty title/message (maximum 160/2000 characters). There is no public creation, deletion, or content-editing endpoint. No business module generates notifications yet.
 
 All notification routes use the existing authentication and forced-password-change guard. Every database operation is scoped to the authenticated recipient; responses omit recipient records and internal metadata. Both PATCH routes require the existing Origin/CSRF header protection and accept no body fields.
 
@@ -262,10 +262,14 @@ All notification routes use the existing authentication and forced-password-chan
 
 Listing accepts only `page` (default 1, maximum 1,000,000), `limit` (default 20, maximum 100), and `status=all|unread|read` (default `all`). Invalid or unsupported queries are rejected. The response contains `notifications` and `pagination` (`page`, `limit`, `total`, `totalPages`, `hasNextPage`, `hasPreviousPage`). Empty results have `totalPages: 0`; pages beyond the last page return an empty array. Related resource metadata does not populate or validate future module records: an ObjectId requires a controlled resource type, while a type alone is allowed. Compound indexes support recipient/date sorting and recipient/read-state filtering/counting.
 
-Notification fixtures are created only in guarded, isolated test databases using mandatory `TEST_MONGODB_URI`; no development notifications are seeded. Notification UI and future module integrations remain deferred.
+All four roles share `/notifications`, accessible through the navbar bell and the existing sidebar entry. The bell shows the real unread count, hides the badge at zero or when unavailable, and caps the visible badge at `99+`. The page uses backend All/Unread/Read filters and 20-item Previous/Next pagination, with loading, retry, and empty states. Read and read-all actions refresh both the server list and unread count; failed actions keep the current records unchanged. Resource IDs are not displayed and do not link to unimplemented modules.
+
+One notification provider consumes AuthContext, holding only unread-count state. Counts refresh after authenticated session restoration, notification-page loads, successful read operations, and visible-tab changes. There is no polling timer and no WebSockets. Concurrent count refreshes are deduplicated; stale filter/count responses are ignored. Logout/account changes clear notification state and abort old requests; forced-password sessions do not fetch notifications. Count failures leave the navbar and dashboards usable, with retry available on the notification page.
+
+Notification fixtures are created only in guarded, isolated test databases using mandatory `TEST_MONGODB_URI`; no development notifications are seeded. Browser coverage exercises the shared notification UI and existing auth/profile flows for all four roles at 1440, 1024, 768, 375 and 320 pixels. Complaint, Feedback, and other future modules should call the internal creation service when their own business events are implemented.
 
 ## Scope and next phase
 
-Phase 1 architecture, shared components, health endpoint and four dashboard layouts are retained. Department/HOD creation, faculty/student management, subjects, assignments, feedback, suggestions, complaints/routing/escalation, notification UI, analytics and DSA features are not implemented.
+Phase 1 architecture, shared components, health endpoint and four dashboard layouts are retained. Department/HOD creation, faculty/student management, subjects, assignments, feedback, suggestions, complaints/routing/escalation, analytics and DSA features are not implemented.
 
-Next: **Phase 4 Part 2 — Notification UI and frontend integration**. Only the shared backend foundation is included in Part 1.
+Phase 4 provides shared notification infrastructure and UI. Later module integrations remain outside this phase.

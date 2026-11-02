@@ -335,6 +335,49 @@ a {
   font-weight: 600;
 }
 
+.navbar-actions {
+  flex-shrink: 0;
+}
+
+.notification-bell {
+  position: relative;
+  text-decoration: none;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  font-size: 0.65rem;
+}
+
+.notifications-page,
+.notification-item {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-list {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item.is-unread {
+  border-left: 4px solid var(--cv-primary);
+  background: #f8faff;
+}
+
+.notification-message {
+  white-space: pre-wrap;
+}
+
+.notifications-page .btn .loading-state {
+  color: inherit;
+}
+
 .auth-page {
   min-height: 100vh;
   display: flex;
@@ -403,6 +446,25 @@ a {
 }
 
 @media (max-width: 575.98px) {
+  .app-navbar {
+    flex-wrap: wrap;
+  }
+
+  .navbar-identity {
+    flex: 1;
+  }
+
+  .navbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .notifications-page nav > span {
+    order: -1;
+    flex-basis: 100%;
+    text-align: center;
+  }
+
   .main-content {
     padding: 1rem 0.75rem;
   }

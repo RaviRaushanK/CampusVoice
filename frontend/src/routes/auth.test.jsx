@@ -4,10 +4,13 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import App from "../App";
 import * as auth from "../services/authService";
+import * as notifications from "../services/notificationService";
+vi.mock("../services/notificationService", () => ({ getUnreadCount: vi.fn() }));
 vi.mock("../services/authService", () => ({ me: vi.fn(), login: vi.fn(), logout: vi.fn(), changePassword: vi.fn() }));
 const roles = ["PRINCIPAL", "HOD", "FACULTY", "STUDENT"];
 const profile = (role = "PRINCIPAL", mustChangePassword = false) => ({ name: "Authenticated User", role, mustChangePassword, userCode: "test1" });
 const open = path => render(<MemoryRouter initialEntries={[path]}><App /></MemoryRouter>);
+beforeEach(() => notifications.getUnreadCount.mockResolvedValue({ data: { count: 0 } }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.useRealTimers(); });
 it.each(roles)("direct %s dashboard URL requires authentication", async role => {
   auth.me.mockRejectedValue({ status: 401 }); open(`/${role.toLowerCase()}/dashboard`);
