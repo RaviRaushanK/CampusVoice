@@ -1,0 +1,1 @@
+module.exports = Object.freeze({ MAX_MONTHS: 24, DEFAULT_MONTHS: 12, PROCESSING_LIMIT: 100, GROUP_LIMIT: 100 });

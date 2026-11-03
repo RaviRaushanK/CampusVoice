@@ -38,6 +38,7 @@ app.use("/api/feedback-sessions", require("./routes/feedbackSessionRoutes"));
 app.use("/api/general-feedback", require("./routes/generalFeedbackRoutes"));
 app.use("/api/suggestions", require("./routes/suggestionRoutes"));
 app.use("/api/complaints", require("./routes/complaintRoutes"));
+app.use("/api/analytics", require("./routes/analyticsRoutes"));
 app.use("/api", academicRoutes);
 app.use(notFound);
 app.use(errorHandler);

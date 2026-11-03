@@ -84,7 +84,7 @@ const read = async (user, filter, { page = 1, limit = 20 } = {}, detail = false)
     ...(!own ? { identity: item.identityMode === "NAMED" ? identities.get(String(item.namedStudentId)) || null : null } : {}),
     ...(detail ? { description: item.description, resolutionSummary: item.resolutionSummary, resolvedAt: item.resolvedAt, closedAt: item.closedAt,
       attachments: item.attachments.map((file, index) => ({ id: String(file._id), displayName: own ? file.originalName : `Attachment ${index + 1}`, mimeType: file.mimeType, size: file.size })),
-      timeline: item.events.map(entry => ({ ...entry, actor: entry.actorRole === "STUDENT" ? own ? "You" : item.identityMode === "ANONYMOUS" ? "Anonymous Student" : "Student" : entry.actorRole })),
+      timeline: new (require("../utils/dsa/LinkedList"))(item.events.map(entry => ({ ...entry, actor: entry.actorRole === "STUDENT" ? own ? "You" : item.identityMode === "ANONYMOUS" ? "Anonymous Student" : "Student" : entry.actorRole }))).toArray(),
       availableActions: actionsFor(user, item), readOnly: !own && String(item.currentHandlerId) !== String(user._id) } : {}) })), pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasNextPage: page * limit < total, hasPreviousPage: page > 1 && total > 0 } };
 };
 const list = async (user, view, query = {}) => {
@@ -136,4 +136,4 @@ const counts = async user => {
   const value = result || { total: 0, open: 0, resolved: 0, urgent: 0, escalated: 0, requests: 0 };
   return user.role === "STUDENT" ? { "Total Complaints": value.total, "Open Complaints": value.open, "Resolved Complaints": value.resolved } : user.role === "FACULTY" ? { "Assigned Issues": value.total, "Pending Issues": value.open } : user.role === "HOD" ? { "Department Complaints": value.total, "Pending Complaints": value.open, "Escalation Requests": value.requests } : { "Assigned Complaints": value.total, "Urgent Complaints": value.urgent, "Escalated Complaints": value.escalated };
 };
-module.exports = { options, create, list, get, act, attachment, counts };
+module.exports = { options, create, list, get, act, attachment, counts, scope };

@@ -11,10 +11,15 @@ const openFilter = (now = new Date()) => ({ status: "OPEN", $and: [
 const normalizeSection = value => (value || "").trim().toUpperCase();
 const eligibleFilter = student => ({ departmentId: student.departmentId || null, "audience.semester": student.semester || -1,
   "audience.section": normalizeSection(student.section), $or: [{ "audience.batch": null }, { "audience.batch": student.batch || null }] });
-const recipientFilter = session => ({ role: "STUDENT", isActive: true, departmentId: session.departmentId,
-  semester: session.audience.semester,
-  // Match legacy section casing/nulls exactly as Student eligibility does.
-  $expr: { $eq: [{ $toUpper: { $trim: { input: { $ifNull: ["$section", ""] } } } }, session.audience.section] },
-  ...(session.audience.batch ? { batch: session.audience.batch } : {}),
-});
-module.exports = { state, openFilter, eligibleFilter, recipientFilter };
+const recipientExpression = ({ departmentId, semester, section, batch }) => ({ $and: [
+  { $eq: ["$departmentId", departmentId] }, { $eq: ["$semester", semester] },
+  { $eq: [{ $toUpper: { $trim: { input: { $ifNull: ["$section", ""] } } } }, section] },
+  { $or: [{ $in: [{ $ifNull: [batch ?? null, null] }, [null, ""]] }, { $eq: ["$batch", batch ?? null] }] },
+] });
+const recipientFilter = session => ({ role: "STUDENT", isActive: true, $expr: recipientExpression({ departmentId: session.departmentId, semester: session.audience.semester, section: session.audience.section, batch: session.audience.batch }) });
+const stateExpression = (now = new Date()) => ({ $switch: { branches: [
+  { case: { $eq: ["$status", "DRAFT"] }, then: "DRAFT" },
+  { case: { $or: [{ $eq: ["$status", "CLOSED"] }, { $and: [{ $ne: [{ $ifNull: ["$closesAt", null] }, null] }, { $lte: ["$closesAt", now] }] }] }, then: "CLOSED" },
+  { case: { $and: [{ $ne: [{ $ifNull: ["$opensAt", null] }, null] }, { $gt: ["$opensAt", now] }] }, then: "SCHEDULED" },
+], default: "OPEN" } });
+module.exports = { state, openFilter, eligibleFilter, recipientFilter, recipientExpression, stateExpression };

@@ -30,6 +30,33 @@ beforeEach(() => {
   service.publishSession.mockResolvedValue({ data: { ...draft, status: "OPEN", availability: "OPEN", notificationDelivery: { sent: 1, failed: 0 } } }); service.closeSession.mockResolvedValue({ data: { ...draft, status: "CLOSED", availability: "CLOSED" } });
 });
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
+it("question Add/Undo/Redo restores local state and new edit clears redo", async () => {
+  await start(); expect(screen.getByRole("button", { name: "Undo", exact: true }).disabled).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Add Question", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Undo", exact: true })); expect(screen.queryByLabelText("Question 1 prompt")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Redo", exact: true })); expect(screen.getByLabelText("Question 1 prompt").value).toBe("");
+  change("Question 1 prompt", "First change"); change("Question 1 prompt", "Second change");
+  fireEvent.click(screen.getByRole("button", { name: "Undo", exact: true })); expect(screen.getByLabelText("Question 1 prompt").value).toBe("First change");
+  change("Question 1 prompt", "New branch"); expect(screen.getByRole("button", { name: "Redo", exact: true }).disabled).toBe(true); expect(service.createSession).not.toHaveBeenCalled();
+});
+it("question removal and reordering Undo preserve stable IDs and normal Save", async () => {
+  service.getSession.mockResolvedValue({ data: { ...draft, questions: [draft.questions[0], { ...draft.questions[0], id: "second", prompt: "Second prompt" }] } });
+  open("/my-sessions/session/edit"); await screen.findByLabelText("Question 1 prompt");
+  fireEvent.click(screen.getByRole("button", { name: "Move question 2 up", exact: true })); expect(screen.getByLabelText("Question 1 prompt").value).toBe("Second prompt");
+  fireEvent.click(screen.getByRole("button", { name: "Undo", exact: true })); expect(screen.getByLabelText("Question 1 prompt").value).toBe("Any suggestions?");
+  fireEvent.click(screen.getByRole("button", { name: "Remove question 1", exact: true }));
+  fireEvent.click(screen.getByRole("button", { name: "Undo", exact: true })); expect(screen.getByLabelText("Question 1 prompt").value).toBe("Any suggestions?");
+  fireEvent.click(screen.getByRole("button", { name: "Save Draft", exact: true }));
+  await waitFor(() => expect(service.updateSession).toHaveBeenCalled()); expect(service.updateSession.mock.calls[0][1].questions.map(item => item.id)).toEqual(["question", "second"]);
+});
+it("question history is bounded to 50 states", async () => {
+  await start(); fireEvent.click(screen.getByRole("button", { name: "Add Question", exact: true }));
+  const prompt = screen.getByLabelText("Question 1 prompt"), undoButton = screen.getByRole("button", { name: "Undo", exact: true });
+  for (let index = 0; index <= 50; index++) fireEvent.change(prompt, { target: { value: `Edit ${index}` } });
+  for (let index = 0; index < 50; index++) fireEvent.click(undoButton);
+  expect(screen.getByLabelText("Question 1 prompt").value).toBe("Edit 0"); expect(screen.getByRole("button", { name: "Undo", exact: true }).disabled).toBe(true);
+});
+it("published sessions cannot expose Undo or Redo", async () => { service.getSession.mockResolvedValue({ data: { ...draft, status: "OPEN" } }); open("/my-sessions/session/edit"); await screen.findByText("Only draft sessions can be edited."); expect(screen.queryByRole("button", { name: "Undo", exact: true })).toBeNull(); expect(screen.queryByRole("button", { name: "Redo", exact: true })).toBeNull(); });
 it("shows loading, empty state and Create Session navigation", async () => {
   let finish; service.getMySessions.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; })); open();
   await screen.findByText("Loading sessions"); await waitFor(() => expect(service.getMySessions).toHaveBeenCalled()); await act(async () => finish(result()));

@@ -532,3 +532,6 @@ a {
 .complaint-page input, .complaint-page select, .complaint-page textarea { max-width: 100%; min-width: 0; }
 .complaint-timeline { list-style: none; padding-left: 0; border-left: 3px solid var(--bs-border-color); }
 .complaint-timeline > li { margin-left: .75rem; }
+.analytics-page { min-width: 0; overflow-wrap: anywhere; }
+.analytics-page .panel, .analytics-page input, .analytics-page select { min-width: 0; max-width: 100%; }
+.processing-list { padding-left: 1.25rem; }

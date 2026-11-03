@@ -270,7 +270,7 @@ Notification fixtures are created only in guarded, isolated test databases using
 
 ## Scope and next phase
 
-Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 adds Faculty session building/publishing, Student participation, and privacy-safe Faculty results. Phase 7 adds General Feedback, Private Suggestions and shared content moderation. Phase 8 adds routed complaints/grievances, documented below. Advanced institution/department analytics, DSA and AI features remain deferred.
+Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 adds Faculty sessions, participation and results. Phase 7 adds General Feedback, Private Suggestions and moderation. Phase 8 adds routed complaints/grievances. Phase 9 adds authorized role analytics and integrated DSA processing, documented below. AI, Faculty rankings and Phase 10 remain deferred.
 
 Phase 5 supplies the academic foundation required by later feedback/session modules. It does not generate business notifications or implement those later modules.
 
@@ -348,7 +348,7 @@ Student UI routes are `/feedback-sessions` and `/feedback-sessions/:sessionId/re
 
 Backend/frontend tests cover lifecycle, eligibility, privacy, all answer types, duplicate/concurrent submission, notification failures and security guards. The isolated browser workflow covers Faculty publication → eligible Student notification/questionnaire → final submission/Completed → duplicate rejection → wrong-section privacy → Faculty Close at 1440/320px, preserving all-role regression at 1440/1024/768/375/320px. Development database fingerprints can be compared using the existing read-only utility.
 
-Part 3 adds Faculty results and question analytics as described below. CSV export is optional and deferred. General Feedback/moderation, Suggestions and Complaints are documented in Phases 7–8 below. Advanced institution/department analytics remain deferred.
+Part 3 adds Faculty results and question analytics as described below. CSV export is optional and deferred. General Feedback/moderation, Suggestions and Complaints are documented in Phases 7–8 below; authorized aggregate analytics follow in Phase 9.
 
 ## Phase 6 Part 3 — Faculty Results and Session Analytics
 
@@ -366,7 +366,7 @@ Short answers load on demand through `GET /api/feedback-sessions/:sessionId/resu
 
 The Results page uses shared loading/alert/stat/layout components, question cards, responsive CSS bar charts with adjacent readable counts/percentages, paginated text cards, empty states, retries, and manual Refresh. Charts add no dependencies and never replace numeric data. There is no automatic analytics polling, anonymous-identity reveal endpoint, generic raw-response listing, CSV export, AI analysis or cross-Faculty analytics. Backend HTTP tests inspect complete responses for anonymous identity leakage; frontend and isolated browser tests cover both Anonymous and Named display.
 
-Part 1/2 body limits, notifications, response finality, uniqueness, identity lock, eligibility and availability behavior are retained. The 2 MB JSON allowance remains limited to Feedback Session resources; other JSON and all URL-encoded requests remain at 16 KB. Tests use guarded isolated databases, with read-only development fingerprints before/after verification. Phase 7 extends moderation to new Session SHORT_ANSWER submissions. Complaints/routing are documented under Phase 8; advanced HOD/Principal analytics, DSA and AI analysis remain deferred.
+Part 1/2 body limits, notifications, response finality, uniqueness, identity lock, eligibility and availability behavior are retained. The 2 MB JSON allowance remains limited to Feedback Session resources; other JSON and all URL-encoded requests remain at 16 KB. Tests use guarded isolated databases, with read-only development fingerprints before/after verification. Phase 7 extends moderation to new Session SHORT_ANSWER submissions. Complaints/routing are documented under Phase 8 and authorized aggregate analytics/DSA under Phase 9. AI analysis remains deferred.
 
 ## Phase 7 — General Feedback, Private Suggestions and Content Moderation
 
@@ -405,7 +405,7 @@ All Phase 7 endpoints reuse HTTP-only JWT authentication, role/first-login/accou
 
 ## Phase 8 — Complaint & Grievance Management
 
-**Phase 8 — Complaint & Grievance Management System: COMPLETE.** Full validation passed: 80 backend files syntax-checked; 686 backend tests (12 files); 310 frontend tests (14 files); production build; seven browser-script syntax checks; upload middleware/utility and new backend-test syntax checks; and the complete four-role browser regression at 1440/1024/768/375/320px. Focused complaint workflows passed at 1440/320px. There were zero failed or skipped tests. All test evidence directories were cleaned, development uploads remained untouched, and before/after development collection counts and SHA-256 fingerprints matched. Phase 9 has not started.
+**Phase 8 — Complaint & Grievance Management System: COMPLETE.** Full validation passed: 80 backend files syntax-checked; 686 backend tests (12 files); 310 frontend tests (14 files); production build; seven browser-script syntax checks; upload middleware/utility and new backend-test syntax checks; and the complete four-role browser regression at 1440/1024/768/375/320px. Focused complaint workflows passed at 1440/320px. There were zero failed or skipped tests. All test evidence directories were cleaned, development uploads remained untouched, and before/after development collection counts and SHA-256 fingerprints matched. Phase 9 is documented below.
 
 Students raise final complaints at `/student/complaints/new`, track their own paginated/filterable history at `/student/complaints`, and open details at `/student/complaints/:complaintId`. Faculty, HOD and Principal use `/<role>/complaints` and the corresponding detail route. Shared detail cards include status, priority, handling level, evidence, an actual vertical timeline, resolution and only currently permitted actions. Loading, empty, error/retry, processing, confirmations and notification-delivery failure states reuse the existing UI. Complaint creation and every action prevent duplicate clicks. Filters cover status/type plus handler priority; lists default to page 1/limit 20, maximum 100, newest createdAt/_id first.
 
@@ -470,4 +470,83 @@ All routes reuse protect/RBAC/CSRF, first-login, inactive-account, token-version
 | `POST /api/complaints/:id/close` | Author, Resolved |
 | `PATCH /api/complaints/:id/priority` | Current handler, upward-only `priority` |
 
-Backend upload tests require and generate a unique `test-results/complaint-uploads-<uuid>` directory; the browser suite uses an isolated directory under its artifacts. Both remove test evidence/directories after completion, including failure paths, and never use development uploads. Database tests retain the existing guarded unique `campusvoice_test_*` databases. Full validation commands remain `check:backend`, `test:backend`, `test:frontend`, `build:frontend` and `test:browser`, with syntax/whitespace checks and development fingerprints. No DSA structures, advanced analytics, AI, email/SMS, Phase 9 or Phase 10 were started.
+Backend upload tests require and generate a unique `test-results/complaint-uploads-<uuid>` directory; the browser suite uses an isolated directory under its artifacts. Both remove test evidence/directories after completion, including failure paths, and never use development uploads. Database tests retain the existing guarded unique `campusvoice_test_*` databases. Full validation commands remain `check:backend`, `test:backend`, `test:frontend`, `build:frontend` and `test:browser`, with syntax/whitespace checks and development fingerprints. Phase 8 introduced no DSA, advanced analytics, AI or email/SMS. Authorized analytics and DSA are documented next; Phase 10 remains deferred.
+
+## Phase 9 — Role Analytics and DSA
+
+**Phase 9 — Analytics + DSA: COMPLETE.** Final full validation passed: 91 backend JavaScript/ESM files syntax-checked; 747 backend tests in 14 files (including 23 DSA unit tests); 331 frontend tests in 15 files; production build; eight browser-script syntax checks; new analytics/DSA test syntax; whitespace checks; and all 21 browser workflow checkpoints. No final tests failed or were skipped. Four-role regression passed at 1440/1024/768/375/320px, with focused Analytics/DSA workflows at 1440/320px. Phase 10 has not started.
+
+The first development fingerprint comparison changed during implementation: the user confirmed signing into the Principal account; the observed User login/update timestamps changed and four empty model collections appeared. That activity was preserved, never reverted or hidden by overwriting the original manifests. A fresh controlled before/after comparison around **another complete backend/frontend/browser validation run** matched every collection count and document SHA-256 fingerprint. Controlled manifest SHA-256: `F6E5EAF1999CF83061EF8B9A845441D47B53F8E536473EDC5FC10FDDE4D03198` on both sides. Development remained 2 Departments, 1 User and zero records in all ten other collections. Original and controlled manifests are retained under ignored `test-results/`. Test evidence directories were cleaned and development uploads remained untouched.
+
+Principal, HOD and Faculty access Analytics from their role navigation or dashboard link at `/<role>/analytics`. The shared responsive page uses real server aggregates, existing StatCards and accessible CSS distribution bars with adjacent counts/percentages. Monthly trends have visible month/count labels, including zero months. Rating averages display two decimals; rates display two decimals; zero denominator yields 0%, and an absent rating average is null/“Not available.” Empty modules show “No data available for this period.” Pages load on open, applied dates or manual refresh; there is no polling or new chart dependency. Loading, errors/retry and cancellation clear stale charts.
+
+### Authorized analytics scopes
+
+| Role | Academic overview | Feedback / sessions | Complaints | Suggestions |
+| --- | --- | --- | --- | --- |
+| Principal | Current Departments, active Faculty/Students/HODs | Institution aggregate-only General Feedback and published-session participation | Only explicit Phase 8 current/prior handling grants | No fields, counts, queries or section |
+| HOD | Current department's active Faculty/Students, Subjects, Classes, active Assignments | Historical department **and** Faculty currently in that department; session data aggregate-only, published sessions only | Existing explicit grants only; no Against-HOD, un-escalated Faculty Issues or Principal-only cases | No fields, counts, queries or section |
+| Faculty | No institution overview | Own General Feedback, own cross-session Draft/Scheduled/Open/Closed summaries and responses | Own authorized current/prior Faculty Issues; no Against-Faculty complaints | Own received total, Anonymous/Named counts and monthly volumes only |
+| Student | No institutional analytics | Own completed responses and submitted Feedback counts | Own submitted/open/resolved totals | Own sent total only |
+
+Student's existing dashboard keeps its all-time activity counts and adds a lazy “My activity by period” panel. Opening it loads `/api/analytics/summary` for the authenticated Student, with optional date controls; closing aborts pending loads. There is no Student institutional Analytics menu or peer comparison.
+
+Principal General Feedback exposes volume, average, 1–5 distribution, monthly volume and up to 100 Department aggregates. HOD/Faculty receive Subject aggregates within their scope, also bounded to 100 with a truncation flag. Groups use academic identity order, never rating order; there is no Faculty leaderboard or performance score. Session statistics contain session availability/question-type counts, published count, total responses, Anonymous/Named counts, eligible response opportunities, participation rate and response volume. They contain no titles, prompts, individual answers, short-answer text, response records or identities.
+
+Complaint aggregates include authorized total, pending/resolved/closed, urgent, escalated, pending escalation requests, escalated-to-Principal, and status/type/priority distributions/monthly volume. They reuse the **same exported Phase 8 scope** as operational complaints. Excluded complaint categories are omitted from the target's distribution as well as excluded from totals. Higher roles do not acquire an all-complaints view. All aggregate DTOs omit individual complaint text, Student identities, raw documents and cross-module anonymous correlation identifiers. Private Suggestion analytics are constructed and queried only for Faculty; HOD/Principal receive no Suggestion information.
+
+### Dates and participation semantics
+
+Analytics accepts strict `YYYY-MM-DD` UTC dates from 2000–2100, inclusive of Date To. Defaults are the latest 12 calendar months through the current UTC day; an omitted Date From derives from Date To. Requests spanning more than 24 calendar months, invalid/rolled dates, reversed ranges, repeated/array parameters or unsupported filters are rejected. Trends always use UTC monthly buckets and zero-fill missing months within that bounded range. Academic overview remains a current snapshot, explicitly labelled in the UI rather than being misleadingly restricted by account creation dates.
+
+Feedback/Suggestion/Complaint period membership uses createdAt. Session totals select sessions created in the period; response totals/trends additionally require submittedAt in the period. Published includes scheduled/open/closed published sessions, excludes drafts for administrators. Faculty additionally sees own drafts in session totals/question-type counts. Availability reuses Phase 6 boundaries through the shared availability helper.
+
+Participation pools counted responses over **the sum of current eligible Student opportunities for selected published sessions**, not distinct institution-wide Students. The correlated Mongo eligibility predicate is shared with Phase 6 publication/results and retains department, semester, normalized section and optional-batch wildcard semantics, including legacy empty batches. Only valid Anonymous/Named responses count, matching Phase 6 Results. Historical responses remain after account/membership changes; therefore a rate can exceed 100% and is never clamped. Zero opportunities gives 0%. This is a pooled participation rate, not an unweighted mean of per-session percentages.
+
+### Complaint processing views
+
+Faculty/HOD/Principal open `/<role>/complaint-processing` from dashboard or complaint inbox. This is an additional read-only view; the normal paginated inbox remains available. Only unresolved complaints **currently** assigned to that authenticated account/role enter a processing structure, after all Phase 8 scope/exclusion rules. Prior handlers may still see authorized historical analytics but do not get actionable queue entries. Dequeueing neither deletes nor mutates MongoDB records; actual actions still re-read current DB state and enforce Phase 8 version/state/handler rules.
+
+FIFO shows oldest submitted cases first. Priority uses URGENT, HIGH, NORMAL, with oldest submitted first within a priority and record ID as deterministic tie-breaker. The default processing view includes **all submission dates**, so old unresolved complaints do not disappear. Explicit API dates can narrow it using the same validated range rules. Mongo selects the first 100 candidates in the requested global order (plus one for truncation detection) before memory processing. Thus a newer Urgent case is not lost behind 100 old Normal cases. The Queue or binary heap then enqueues/dequeues that bounded authorized window. Truncation and the search window are disclosed.
+
+The visible literal title/exact-ID search scans only that bounded window. It uses explicit linear searching with `includes`, without user-created regex. Type filtering remains inside the authorized database scope. Student access is forbidden. Queue output includes only complaint ID/title/type/status/priority/submitted time, without Student identities, attachments or internal handling grants.
+
+### DSA feature mapping and complexity
+
+MongoDB remains durable storage for complaints, embedded events, sessions and responses. DSA structures are transient processing/editing tools, never a replacement database.
+
+| Implementation | Production integration | Typical time / space |
+| --- | --- | --- |
+| `utils/dsa/Queue.js` | `analyticsService.processing`: FIFO authorized complaint view, Map with head/tail indexes | enqueue/dequeue/peek O(1); O(n) memory, production n ≤ 100 |
+| `utils/dsa/PriorityQueue.js` | `analyticsService.processing`: comparator-based binary min-heap for triage | enqueue/dequeue O(log n), peek O(1); O(n), n ≤ 100 |
+| `utils/dsa/Stack.mjs` | Faculty `SessionEditor`: separate Undo/Redo stacks for unsaved question states | structural push/pop/peek O(1); cloning O(s) per questionnaire state; bounded 50-state history |
+| `utils/dsa/LinkedList.js` | `complaintService.read`: linked-node traversal of **already privacy-safe** serialized timeline events | append O(1) with tail; find/traverse/toArray O(n); O(n) |
+| `utils/dsa/search.js` | Binary Search finds a month in sorted bounded aggregate buckets; linear search selects literal processing-window matches | binary O(log b); linear O(n), result O(n); b ≤ 24, n ≤ 100 |
+| `utils/dsa/sort.js` | Stable, non-mutating Merge Sort orders monthly aggregate buckets before zero filling | O(b log b) time, O(b) working space; b ≤ 24 |
+| Arrays / Maps | Aggregate distributions, state/category counters, priority weights and lookup tables in analytics | O(n + categories) mapping rather than repeated category scans |
+| `contentModerationService.js` | Existing Phase 7/8 submission validation | Bounded string normalization/matching; unchanged moderation rules/tests |
+
+The Stack is a bounded circular buffer; each stack keeps at most 50 states and evicts its oldest state in O(1). Undo/Redo covers question add/remove/edit/options/required/reorder changes, preserving local keys and saved question IDs. A new edit clears Redo. Loading a draft or switching routes clears history; buttons are disabled when unavailable or saving, and published sessions never expose editing/history controls. Undo changes only local unsaved questions, not persisted session history, Student responses or complaints. Normal Save remains the only persistence path.
+
+Linked List nodes hold only privacy-safe timeline event types, role labels, allowed notes and timestamps. Raw actor IDs and Student references are removed in Mongo projection first. The canonical event order remains the append-only embedded Mongo history; traversal returns that same order to the existing vertical timeline. It neither rewrites events nor introduces a second history store.
+
+Searching/Sorting are demoable through the processing search and chronologically zero-filled trends. Existing String processing remains Phase 7's NFKC/case normalization, zero-width/punctuation/spacing handling, controlled substitutions and whole-term boundaries. No duplicate moderation algorithm was created.
+
+### APIs, filters and security
+
+| GET endpoint | Roles | Allowed filters |
+| --- | --- | --- |
+| `/api/analytics/overview` | Principal/HOD/Faculty | dateFrom, dateTo |
+| `/api/analytics/feedback` | Principal/HOD/Faculty | dates, subjectId inside scope |
+| `/api/analytics/sessions` | Principal/HOD/Faculty | dates, subjectId inside scope |
+| `/api/analytics/complaints` | Principal/HOD/Faculty | dates, type, status, priority inside scope |
+| `/api/analytics/complaint-processing` | Principal/HOD/Faculty | optional dates, mode=fifo/priority, type/status/priority, literal search ≤ 100 chars |
+| `/api/analytics/summary` | Student only | dateFrom, dateTo |
+
+Client department/Faculty/Student scope overrides are rejected. A valid foreign subject produces no out-of-scope data. All routes reuse authentication, first-login, active-account/token-version revocation and role enforcement; all responses are no-store and explicit DTOs. Analytics and processing are read-only; global CSRF/mutation/body-limit rules and upload security remain intact. Mongo aggregation facets handle counts/distributions; correlated joins return scalar cohort/response counts without application-level N+1 queries. Existing author/handler/department/session indexes support scoped matches, and in-memory datasets are capped. No charting or other package dependency was added.
+
+### Validation and demo
+
+Run full `npm run check:backend`, `test:backend`, `test:frontend`, `build:frontend` and `test:browser`, plus `git diff --check`. The syntax checker now includes `.mjs` utilities. DSA unit tests prove FIFO, heap invariants/large sample/priority ties, bounded Stack eviction, linked nodes/traversal, search boundaries and stable non-mutating Merge Sort. Analytics HTTP tests inspect complete JSON for privacy, department/owner/complaint exclusions, dates/zero buckets, participation parity (including rates over 100%), processing bounds/order, read-only persistence and authentication guards.
+
+Browser demonstrations use isolated real application records at 1440/320px: Principal/HOD/Faculty analytics, empty date periods, personal Student summary, FIFO vs Priority processing with oldest ties, literal/exact-ID search, builder Add/Edit/Reorder/Undo/Undo/Redo and normal Save, and linked timeline order. Full four-role regression remains at 1440/1024/768/375/320px. Tests retain guarded unique test databases and isolated evidence cleanup; development counts/fingerprints are compared before/after validation. AI analytics/sentiment/classification, Faculty ranking, PDF/Excel reporting, email/SMS reports and Phase 10 remain deferred.

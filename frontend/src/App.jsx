@@ -29,6 +29,8 @@ import FeedbackOverview from "./pages/principal/FeedbackOverview";
 import RaiseComplaint from "./pages/student/RaiseComplaint";
 import ComplaintList from "./components/complaints/ComplaintList";
 import ComplaintDetail from "./components/complaints/ComplaintDetail";
+import AnalyticsPage from "./components/analytics/AnalyticsPage";
+import ComplaintProcessing from "./components/analytics/ComplaintProcessing";
 
 const SharedRoleLayout = () => {
   const { user } = useAuth();
@@ -56,6 +58,8 @@ const App = () => {
           <Route path="/departments" element={<Departments />} /><Route path="/hods" element={<Hods />} />
           <Route path="/principal/feedback-overview" element={<FeedbackOverview />} />
           <Route path="/principal/complaints" element={<ComplaintList />} />
+          <Route path="/principal/analytics" element={<AnalyticsPage />} />
+          <Route path="/principal/complaint-processing" element={<ComplaintProcessing />} />
           <Route path="/principal/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="HOD"><SharedRoleLayout /></ProtectedRoute>}>
@@ -64,6 +68,8 @@ const App = () => {
           <Route path="/faculty-assignments" element={<FacultyAssignments />} />
           <Route path="/hod/general-feedback" element={<DepartmentGeneralFeedback />} />
           <Route path="/hod/complaints" element={<ComplaintList />} />
+          <Route path="/hod/analytics" element={<AnalyticsPage />} />
+          <Route path="/hod/complaint-processing" element={<ComplaintProcessing />} />
           <Route path="/hod/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="FACULTY"><SharedRoleLayout /></ProtectedRoute>}>
@@ -75,6 +81,8 @@ const App = () => {
           <Route path="/faculty/general-feedback" element={<FacultyGeneralFeedback />} />
           <Route path="/faculty/suggestions" element={<FacultySuggestions />} />
           <Route path="/faculty/complaints" element={<ComplaintList />} />
+          <Route path="/faculty/analytics" element={<AnalyticsPage />} />
+          <Route path="/faculty/complaint-processing" element={<ComplaintProcessing />} />
           <Route path="/faculty/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="STUDENT"><SharedRoleLayout /></ProtectedRoute>}>

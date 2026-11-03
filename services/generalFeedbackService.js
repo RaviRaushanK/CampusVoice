@@ -38,4 +38,4 @@ const aggregate = async (user, options = {}) => {
   assertRole(user, "PRINCIPAL"); emptyQuery(options);
   return summarize(await Feedback.aggregate([{ $group: { _id: "$rating", count: { $sum: 1 } } }]));
 };
-module.exports = { create, list, get, aggregate, options: recipients.assignmentOptions };
+module.exports = { create, list, get, aggregate, scope, options: recipients.assignmentOptions };
