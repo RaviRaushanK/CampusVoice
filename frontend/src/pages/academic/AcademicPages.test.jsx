@@ -116,7 +116,7 @@ it("a failed search does not display stale records under the new filter", async 
   expect(screen.queryByRole("cell", { name: row.name })).toBeNull();
 });
 it.each([["/departments", "HOD"], ["/hods", "FACULTY"], ["/faculty", "PRINCIPAL"], ["/students", "STUDENT"], ["/subjects", "FACULTY"], ["/classes", "STUDENT"], ["/faculty-assignments", "FACULTY"]])("wrong-role %s is redirected before management data loads", async (path, role) => {
-  open(path, role); await screen.findByText("No recent activity yet");
+  open(path, role); await screen.findByText("Workspace ready");
   expect(api.listAcademic).not.toHaveBeenCalled(); expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
 });
 it("Faculty sees only read-only assignment history", async () => {

@@ -7,7 +7,6 @@ import PageHeader from "../../components/common/PageHeader";
 import StatCard from "../../components/common/StatCard";
 import AlertMessage from "../../components/common/AlertMessage";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import EmptyState from "../../components/common/EmptyState";
 const AcademicDashboard = ({ title }) => {
   const { user } = useAuth();
   const [data, setData] = useState(null);
@@ -37,7 +36,7 @@ const AcademicDashboard = ({ title }) => {
         <div className="d-flex flex-wrap gap-2"><Link to="/my-assignments" className="btn btn-outline-primary">View my assignments</Link><Link to="/my-sessions" className="btn btn-outline-primary">My Sessions</Link><Link to="/my-sessions/new" className="btn btn-primary">Create Session</Link></div>
       </section>}
     </>}
-    <EmptyState title="No recent activity yet" message="An activity feed will be available when later modules are connected." icon="bi-clock-history" />
+    <section className="panel" aria-label="Workspace navigation"><h3 className="h5">Workspace ready</h3><p className="mb-0">Use your summary cards and navigation to open authorized modules. Review Notifications for recent updates.</p></section>
   </div>;
 };
 export default AcademicDashboard;

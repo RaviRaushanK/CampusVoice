@@ -64,7 +64,7 @@ it("handles an unavailable profile", async () => {
 it.each(["PRINCIPAL", "HOD", "FACULTY", "STUDENT"])("%s navigation opens the shared profile with its existing layout", async role => {
   auth.me.mockResolvedValue({ data: { ...profile, role } });
   service.getProfile.mockResolvedValue({ data: { ...profile, role } }); open(`/${role.toLowerCase()}/dashboard`);
-  await screen.findByText("No recent activity yet");
+  await screen.findByText("Workspace ready");
   const link = screen.getByRole("link", { name: "Profile", exact: true });
   expect(link.getAttribute("href")).toBe("/profile");
   fireEvent.click(link);

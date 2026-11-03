@@ -29,4 +29,4 @@ const requirePasswordChanged = (req, res, next) => {
   next();
 };
 // Future business routes should use protect; auth recovery endpoints use authenticate.
-module.exports = { authenticate, requirePasswordChanged, protect: [authenticate, requirePasswordChanged] };
+module.exports = { authenticate, requirePasswordChanged, protect: [authenticate, requirePasswordChanged, require("./mutationLimiter")] };

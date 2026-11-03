@@ -44,4 +44,4 @@ const update = async (user, role, identifier, fields) => {
     return get(user, role, identifier);
   });
 };
-module.exports = { list, get, create, update };
+module.exports = { list, get, create: require("./auditService").academic(args => args[1], create, false, { fields: 2 }), update: require("./auditService").academic(args => args[1], update, true, { fields: 3, id: 2 }) };

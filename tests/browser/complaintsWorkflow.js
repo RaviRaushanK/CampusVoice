@@ -46,7 +46,7 @@ const runComplaintsWorkflow = async ({ page, frontendOrigin, apiOrigin, width, a
   for (let item of [issue, againstFaculty, againstHod, urgent]) { await detail("STUDENT", item); item = await mutate(item, "close", "Close Complaint"); assert.equal(item.status, "CLOSED"); if (item.id === issue.id) assert.deepEqual(item.timeline.map(entry => entry.eventType), ["SUBMITTED", "ACKNOWLEDGED", "IN_PROGRESS", "ESCALATION_REQUESTED", "ESCALATED", "ACKNOWLEDGED", "IN_PROGRESS", "RESOLVED", "CLOSED"]); }
   await page.evaluate(() => window.scrollTo(0, 0)); await page.screenshot({ path: resolve(artifacts, `complaint-student-closed-${width}.png`), fullPage: true });
   await signIn(faculty, "FACULTY"); assert.equal((await page.request.get(`${api}/${againstFaculty.id}`)).status(), 404); const notices = (await (await page.request.get(`${apiOrigin}/api/notifications?limit=100`)).json()).data.notifications; assert.equal(notices.some(notice => notice.relatedResourceId === againstFaculty.id), false);
-  await logout(); await login("browser.principal", principalPassword, "PRINCIPAL"); await go("/principal/dashboard"); await page.getByText("No recent activity yet", { exact: true }).waitFor();
+  await logout(); await login("browser.principal", principalPassword, "PRINCIPAL"); await go("/principal/dashboard"); await page.getByText("Workspace ready", { exact: true }).waitFor();
   console.log(`PASS: Complaint Faculty Issue lifecycle/request/escalation/prior-read-only; Against Faculty and Against HOD exclusions; Principal direct Urgent; secure attachment download; real moderation rejection/revision; resolution/closure at ${width}px`);
 };
 module.exports = { runComplaintsWorkflow };

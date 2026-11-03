@@ -50,7 +50,7 @@ const runMessagesWorkflow = async ({ page, frontendOrigin, apiOrigin, width, art
   const aggregate = (await (await page.request.get(`${apiOrigin}/api/general-feedback/aggregate`)).json()).data; assert.deepEqual(Object.keys(aggregate).sort(), ["totalFeedback", "averageRating", "distribution"].sort()); assert.equal(aggregate.totalFeedback, width === 1440 ? 2 : 4); assert.equal(aggregate.averageRating, 4);
   const html = await page.content(); for (const secret of [anonFeedback, namedFeedback, anonSuggestion, namedSuggestion, student.name, student.userCode, namedStudent.name, namedStudent.userCode]) assert.equal(html.includes(secret), false);
   assert.equal(await page.getByRole("link", { name: "Private Suggestions", exact: true }).count(), 0); assert.equal((await page.request.get(`${apiOrigin}/api/suggestions/received`)).status(), 403); assert.equal((await page.request.get(`${apiOrigin}/api/general-feedback/${firstFeedback.id}`)).status(), 403);
-  await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `general-feedback-principal-${width}.png`), fullPage: true }); await navigate("/principal/dashboard"); await page.getByText("No recent activity yet", { exact: true }).waitFor();
+  await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `general-feedback-principal-${width}.png`), fullPage: true }); await navigate("/principal/dashboard"); await page.getByText("Workspace ready", { exact: true }).waitFor();
   console.log(`PASS: General Feedback Anonymous/Named/Faculty/HOD/Principal aggregate-only; private Suggestions/neutral notifications/other-Faculty denial; real moderation rejection and revision at ${width}px`);
 };
 module.exports = { runMessagesWorkflow };

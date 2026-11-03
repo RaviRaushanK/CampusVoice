@@ -5,6 +5,7 @@ const { runResponseWorkflow } = require("./responseWorkflow");
 const { runMessagesWorkflow } = require("./messagesWorkflow");
 const { runComplaintsWorkflow } = require("./complaintsWorkflow");
 const { runAnalyticsWorkflow } = require("./analyticsWorkflow");
+const { runAuditWorkflow } = require("./auditWorkflow");
 
 const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, principalPassword, temporaryPassword, checkLayout, artifacts }) => {
   const navigate = async (path, heading) => {
@@ -57,7 +58,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
       await page.getByRole("button", { name: "Update password", exact: true }).click();
     }
     await page.waitForURL(`**/${role.toLowerCase()}/dashboard`);
-    await page.getByText("No recent activity yet", { exact: true }).waitFor();
+    await page.getByText("Workspace ready", { exact: true }).waitFor();
   };
   await navigate("/departments", "Departments");
   await page.getByRole("button", { name: "Add Department", exact: true }).click();
@@ -114,6 +115,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await runMessagesWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, student, namedStudent, faculty, hod, principalPassword, temporaryPassword, login, logout });
   await runComplaintsWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, student, faculty, hod, principalPassword, login, logout });
   await runAnalyticsWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, student, faculty, hod, principalPassword, login, logout });
+  await runAuditWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, student, faculty, hod, principalPassword, login, logout });
   console.log(`PASS: Principal → Department/HOD → HOD Faculty/Student/Subject/Class/Assignment → Faculty assignment visibility → Student academic information at ${width}px`);
 };
 module.exports = { runAcademicWorkflow };

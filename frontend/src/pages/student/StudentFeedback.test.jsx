@@ -96,5 +96,5 @@ it("does not fetch Student sessions during first-login restriction", async () =>
   open("/feedback-sessions", "STUDENT", { mustChangePassword: true }); await screen.findByText("First login - change your password"); expect(api.getStudentSessions).not.toHaveBeenCalled();
 });
 it.each(["FACULTY", "HOD", "PRINCIPAL"])("%s cannot open Student questionnaire route", async role => {
-  open("/feedback-sessions/session/respond", role); await screen.findByText("No recent activity yet"); expect(api.getStudentSession).not.toHaveBeenCalled();
+  open("/feedback-sessions/session/respond", role); await screen.findByText("Workspace ready"); expect(api.getStudentSession).not.toHaveBeenCalled();
 });

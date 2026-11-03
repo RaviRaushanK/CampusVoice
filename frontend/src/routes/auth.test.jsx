@@ -18,22 +18,22 @@ afterEach(() => { cleanup(); vi.resetAllMocks(); vi.useRealTimers(); });
 it.each(roles)("direct %s dashboard URL requires authentication", async role => {
   auth.me.mockRejectedValue({ status: 401 }); open(`/${role.toLowerCase()}/dashboard`);
   expect(await screen.findByRole("heading", { name: "Welcome back" })).toBeTruthy();
-  expect(screen.queryByText("No recent activity yet")).toBeNull();
+  expect(screen.queryByText("Workspace ready")).toBeNull();
 });
 it("does not expose dashboard content while checking authentication", async () => {
   auth.me.mockReturnValue(new Promise(() => {})); open("/principal/dashboard");
   expect(screen.getByText("Verifying session")).toBeTruthy();
-  expect(screen.queryByText("No recent activity yet")).toBeNull();
+  expect(screen.queryByText("Workspace ready")).toBeNull();
 });
 it.each(roles)("restores %s dashboard with original empty states and shared navigation", async role => {
   auth.me.mockResolvedValue({ data: profile(role) }); open(`/${role.toLowerCase()}/dashboard`);
-  expect(await screen.findByText("No recent activity yet")).toBeTruthy();
+  expect(await screen.findByText("Workspace ready")).toBeTruthy();
   expect(screen.getByText("Authenticated User")).toBeTruthy();
   expect(screen.getAllByRole("button", { name: "Logout" }).length).toBeGreaterThan(0);
 });
 it.each(roles.flatMap(role => roles.filter(target => target !== role).map(target => [role, target])))("%s cannot view %s dashboard", async (role, target) => {
   auth.me.mockResolvedValue({ data: profile(role) }); open(`/${target.toLowerCase()}/dashboard`);
-  await screen.findByText("No recent activity yet");
+  await screen.findByText("Workspace ready");
   const title = role === "HOD" ? "HOD" : role[0] + role.slice(1).toLowerCase();
   expect(screen.getAllByRole("heading", { name: `${title} Dashboard` }).length).toBeGreaterThan(0);
   expect(screen.queryByRole("heading", { name: `${target === "HOD" ? "HOD" : target[0] + target.slice(1).toLowerCase()} Dashboard` })).toBeNull();
@@ -41,7 +41,7 @@ it.each(roles.flatMap(role => roles.filter(target => target !== role).map(target
 it.each(["/", "/login", "/student/dashboard"])("first-login session at %s redirects to password change on restoration", async path => {
   auth.me.mockResolvedValue({ data: profile("STUDENT", true) }); open(path);
   expect(await screen.findByText("First login - change your password")).toBeTruthy();
-  expect(screen.queryByText("No recent activity yet")).toBeNull();
+  expect(screen.queryByText("Workspace ready")).toBeNull();
 });
 it("password change requires authentication", async () => {
   auth.me.mockRejectedValue({ status: 401 }); open("/change-password");
@@ -61,50 +61,46 @@ it("password change establishes new session and redirects to own dashboard", asy
   await screen.findByText("First login - change your password");
   for (const [label, value] of [["Current password", "Temp_123!"], ["New password", "Changed_456!"], ["Confirm new password", "Changed_456!"]]) fireEvent.change(screen.getByLabelText(label), { target: { value } });
   fireEvent.click(screen.getByRole("button", { name: "Update password" }));
-  expect(await screen.findByText("No recent activity yet")).toBeTruthy();
+  expect(await screen.findByText("Workspace ready")).toBeTruthy();
 });
 it.each([0, 1])("logout control %i clears authenticated UI", async control => {
   auth.me.mockResolvedValue({ data: profile() }); auth.logout.mockResolvedValue({}); open("/principal/dashboard");
-  await screen.findByText("No recent activity yet");
+  await screen.findByText("Workspace ready");
   fireEvent.click(screen.getAllByRole("button", { name: "Logout" })[control]);
   expect(await screen.findByText("Welcome back")).toBeTruthy();
 });
 it("failed logout keeps session visible with a retryable error", async () => {
   auth.me.mockResolvedValue({ data: profile() }); auth.logout.mockRejectedValue(new Error("offline")); open("/principal/dashboard");
-  await screen.findByText("No recent activity yet"); fireEvent.click(screen.getAllByRole("button", { name: "Logout" })[1]);
-  expect(await screen.findByRole("alert")).toBeTruthy(); expect(screen.getByText("No recent activity yet")).toBeTruthy();
+  await screen.findByText("Workspace ready"); fireEvent.click(screen.getAllByRole("button", { name: "Logout" })[1]);
+  expect(await screen.findByRole("alert")).toBeTruthy(); expect(screen.getByText("Workspace ready")).toBeTruthy();
 });
 it("expired-session events remove protected content", async () => {
   auth.me.mockResolvedValue({ data: profile() }); open("/principal/dashboard");
-  await screen.findByText("No recent activity yet");
+  await screen.findByText("Workspace ready");
   act(() => window.dispatchEvent(new Event("auth:expired")));
-  await waitFor(() => expect(screen.queryByText("No recent activity yet")).toBeNull());
+  await waitFor(() => expect(screen.queryByText("Workspace ready")).toBeNull());
   expect(await screen.findByText("Welcome back")).toBeTruthy();
 });
 
-it.each(roles)("%s exposes implemented navigation and keeps future entries disabled", async role => {
+it.each(roles)("%s navigation contains only implemented modules", async role => {
   auth.me.mockResolvedValue({ data: profile(role) }); open(`/${role.toLowerCase()}/dashboard`);
-  await screen.findByText("No recent activity yet");
-  const expected = { PRINCIPAL: null, HOD: "Academic Feedback", FACULTY: "My Classes", STUDENT: null };
-  if (role === "PRINCIPAL") { expect(screen.getByRole("link", { name: "Analytics", exact: true }).getAttribute("href")).toBe("/principal/analytics"); return; }
-  if (role === "STUDENT") { expect(screen.getByRole("link", { name: "Raise Complaint" }).getAttribute("href")).toBe("/student/complaints/new"); return; }
-  const placeholder = screen.getByRole("button", { name: expected[role] });
-  expect(placeholder.disabled).toBe(true);
-  expect(screen.queryByRole("link", { name: expected[role] })).toBeNull();
+  await screen.findByText("Workspace ready");
+  expect(screen.queryByRole("button", { name: "Academic Feedback", exact: true })).toBeNull();
+  expect(screen.queryByRole("button", { name: "My Classes", exact: true })).toBeNull();
+  if (role === "STUDENT") expect(screen.getByRole("link", { name: "Raise Complaint", exact: true }).getAttribute("href")).toBe("/student/complaints/new");
+  else expect(screen.getByRole("link", { name: "Analytics", exact: true }).getAttribute("href")).toBe(`/${role.toLowerCase()}/analytics`);
   expect(screen.getByRole("link", { name: "Change password" }).getAttribute("href")).toBe("/change-password");
-  fireEvent.click(placeholder);
-  expect(screen.getByText("No recent activity yet")).toBeTruthy();
 });
 
 it.each(["/", "/unknown"])("%s resolves to the current user's dashboard", async path => {
   auth.me.mockResolvedValue({ data: profile("HOD") }); open(path);
-  expect(await screen.findByText("No recent activity yet")).toBeTruthy();
+  expect(await screen.findByText("Workspace ready")).toBeTruthy();
   expect(screen.getAllByRole("heading", { name: "HOD Dashboard" }).length).toBe(2);
 });
 
 it("a transient session-check failure keeps the known user and recovers on retry", async () => {
   auth.me.mockResolvedValueOnce({ data: profile() }).mockRejectedValueOnce(new TypeError("offline")).mockResolvedValue({ data: profile() });
-  open("/principal/dashboard"); await screen.findByText("No recent activity yet");
+  open("/principal/dashboard"); await screen.findByText("Workspace ready");
   await act(async () => document.dispatchEvent(new Event("visibilitychange")));
   expect(screen.getByRole("alert").textContent).toContain("Unable to check your session");
   expect(screen.getByText("Authenticated User")).toBeTruthy();
@@ -115,28 +111,28 @@ it("a transient session-check failure keeps the known user and recovers on retry
 
 it("a confirmed 401 during refresh clears the protected UI", async () => {
   auth.me.mockResolvedValueOnce({ data: profile() }).mockRejectedValue({ status: 401 });
-  open("/principal/dashboard"); await screen.findByText("No recent activity yet");
+  open("/principal/dashboard"); await screen.findByText("Workspace ready");
   await act(async () => document.dispatchEvent(new Event("visibilitychange")));
   expect(await screen.findByText("Welcome back")).toBeTruthy();
-  expect(screen.queryByText("No recent activity yet")).toBeNull();
+  expect(screen.queryByText("Workspace ready")).toBeNull();
 });
 
 it("an initial network failure shows an error without revealing protected content", async () => {
   auth.me.mockRejectedValue(new TypeError("offline")); open("/principal/dashboard");
   expect(await screen.findByRole("alert")).toBeTruthy();
-  expect(screen.queryByText("No recent activity yet")).toBeNull();
+  expect(screen.queryByText("Workspace ready")).toBeNull();
 });
 
 it("a stale session refresh cannot restore the dashboard after logout", async () => {
   let completeRefresh;
   auth.me.mockResolvedValueOnce({ data: profile() }).mockImplementationOnce(() => new Promise(resolve => { completeRefresh = resolve; }));
   auth.logout.mockResolvedValue({}); open("/principal/dashboard");
-  await screen.findByText("No recent activity yet");
+  await screen.findByText("Workspace ready");
   act(() => document.dispatchEvent(new Event("visibilitychange")));
   fireEvent.click(screen.getAllByRole("button", { name: "Logout" })[0]);
   await screen.findByText("Welcome back");
   await act(async () => completeRefresh({ data: profile() }));
-  expect(screen.queryByText("No recent activity yet")).toBeNull();
+  expect(screen.queryByText("Workspace ready")).toBeNull();
 });
 
 it("first-login logout returns to login and disables duplicate requests", async () => {

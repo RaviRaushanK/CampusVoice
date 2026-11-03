@@ -71,7 +71,7 @@ it("text pages retry errors, paginate, collapse and handle missing named account
   open(); await screen.findByText(results.session.title); fireEvent.click(screen.getByRole("button", { name: "View text responses for question 4" })); await screen.findByText("Unable to load short answers. Please try again."); fireEvent.click(screen.getByRole("button", { name: "Retry short answers" })); await screen.findByText("First page"); fireEvent.click(screen.getByRole("button", { name: "Next answers" })); await screen.findByText("Last page"); expect(screen.getByText("Named student unavailable")).toBeTruthy(); expect(screen.getByRole("button", { name: "Next answers" }).disabled).toBe(true); fireEvent.click(screen.getByRole("button", { name: "Hide text responses for question 4" })); expect(screen.queryByText("Last page")).toBeNull();
 });
 it.each(["STUDENT", "HOD", "PRINCIPAL"])("%s cannot enter Faculty results route", async role => {
-  open("/my-sessions/session/results", role); await screen.findByText("No recent activity yet"); expect(api.getSessionResults).not.toHaveBeenCalled();
+  open("/my-sessions/session/results", role); await screen.findByText("Workspace ready"); expect(api.getSessionResults).not.toHaveBeenCalled();
 });
 it("first-login route guard blocks results requests", async () => {
   open("/my-sessions/session/results", "FACULTY", { mustChangePassword: true }); await screen.findByText("First login - change your password"); expect(api.getSessionResults).not.toHaveBeenCalled();

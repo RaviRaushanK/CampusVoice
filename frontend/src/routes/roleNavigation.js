@@ -4,6 +4,7 @@ const navigation = (role, items) => [
   ...items.map(([label, icon]) => ["Profile", "Notifications"].includes(label)
     ? { label, icon, path: label === "Profile" ? "/profile" : "/notifications" }
     : label === "Analytics" ? { label, icon, path: `/${role}/analytics` }
+    : label === "Audit Logs" ? { label, icon, path: "/principal/audit-logs" }
     : ["Complaints", "Issues", "My Complaints", "Raise Complaint"].includes(label) ? { label, icon, path: `/${role}/complaints${label === "Raise Complaint" ? "/new" : ""}` }
     : academicPaths[role]?.[label] ? { label, icon, path: academicPaths[role][label] } : { label, icon, disabled: true }),
   { label: "Change password", icon: "bi-key", path: "/change-password" },
@@ -12,19 +13,19 @@ const navigation = (role, items) => [
 export const principalNavItems = navigation("principal", [
   ["Departments", "bi-building"], ["HODs", "bi-person-badge"],
   ["Feedback Overview", "bi-clipboard-data"],
-  ["Complaints", "bi-chat-left-text"], ["Analytics", "bi-bar-chart"],
+  ["Complaints", "bi-chat-left-text"], ["Analytics", "bi-bar-chart"], ["Audit Logs", "bi-journal-check"],
   ["Notifications", "bi-bell"], ["Profile", "bi-person-circle"],
 ]);
 export const hodNavItems = navigation("hod", [
   ["Faculty", "bi-people"], ["Students", "bi-mortarboard"],
   ["Subjects", "bi-book"], ["Classes", "bi-easel"],
-  ["Faculty Assignments", "bi-diagram-3"], ["Academic Feedback", "bi-clipboard-check"],
+  ["Faculty Assignments", "bi-diagram-3"],
   ["General Feedback", "bi-chat-square-text"],
   ["Complaints", "bi-chat-left-text"], ["Analytics", "bi-bar-chart"],
   ["Notifications", "bi-bell"], ["Profile", "bi-person-circle"],
 ]);
 export const facultyNavItems = navigation("faculty", [
-  ["My Assignments", "bi-book"], ["My Classes", "bi-easel"],
+  ["My Assignments", "bi-book"],
   ["My Sessions", "bi-calendar-check"], ["General Feedback", "bi-clipboard-check"],
   ["Private Suggestions", "bi-lightbulb"], ["Issues", "bi-exclamation-circle"],
   ["Analytics", "bi-bar-chart"], ["Notifications", "bi-bell"], ["Profile", "bi-person-circle"],

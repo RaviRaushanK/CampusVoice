@@ -12,7 +12,7 @@ const changePassword = async (req, res, next) => {
   try { respondWithSession(res, await service.changePassword(req.user, req.body), "Password changed successfully."); } catch (err) { next(err); }
 };
 const logout = async (req, res, next) => {
-  try { await service.logout(req.user); clearAuthCookie(res); res.sendStatus(204); } catch (err) { next(err); }
+  try { await service.logout(req.user); clearAuthCookie(res); res.sendStatus(204); } catch (err) { clearAuthCookie(res); next(err); }
 };
 const me = (req, res) => res.json({ success: true, data: req.user.toSafeProfile() });
 module.exports = { login, logout, me, changePassword };

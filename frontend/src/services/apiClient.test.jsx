@@ -2,6 +2,12 @@ import { vi } from "vitest";
 import { request } from "./apiClient";
 import { updateProfile } from "./profileService";
 afterEach(() => vi.unstubAllGlobals());
+it("reports audit uncertainty separately while preserving a successful operation result", async () => {
+  const handler = vi.fn(); window.addEventListener("audit:unconfirmed", handler);
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, headers: new Headers({ "X-Audit-Status": "unconfirmed" }), json: async () => ({ success: true, data: { id: "saved" } }) }));
+  try { expect(await request("/departments", { method: "POST", body: "{}" })).toMatchObject({ data: { id: "saved" } }); expect(handler).toHaveBeenCalledOnce(); }
+  finally { window.removeEventListener("audit:unconfirmed", handler); }
+});
 it("sends cookies and a non-simple CSRF header for state changes", async () => {
   const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }); vi.stubGlobal("fetch", fetch);
   await request("/auth/login", { method: "POST", body: "{}" });

@@ -535,3 +535,6 @@ a {
 .analytics-page { min-width: 0; overflow-wrap: anywhere; }
 .analytics-page .panel, .analytics-page input, .analytics-page select { min-width: 0; max-width: 100%; }
 .processing-list { padding-left: 1.25rem; }
+.audit-page, .audit-page .panel { min-width: 0; overflow-wrap: anywhere; }
+.audit-page input, .audit-page select { min-width: 0; max-width: 100%; }
+.audit-warning { position: fixed; z-index: 2000; left: 1rem; right: 1rem; top: 1rem; margin: 0 auto; max-width: 48rem; box-shadow: 0 4px 24px #0002; }

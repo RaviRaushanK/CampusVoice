@@ -1,11 +1,12 @@
 import { useAuth } from "../../context/AuthContext";
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
 const AppShell = ({ roleName, navItems, user, onLogout }) => {
   const { error, loggingOut } = useAuth();
+  const { pathname } = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -20,7 +21,7 @@ const AppShell = ({ roleName, navItems, user, onLogout }) => {
       />
       <div className="app-content">
         <Navbar
-          title={`${roleName} Dashboard`}
+          title={`${roleName} ${pathname.endsWith("/dashboard") ? "Dashboard" : "Workspace"}`}
           onMenuClick={() => setIsSidebarOpen(true)}
           user={user}
           onLogout={onLogout}

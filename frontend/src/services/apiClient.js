@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "/api" : "http://localhost:5000/api");
 export const request = async (path, options = {}) => {
   const { notifyAuthFailure = true, ...fetchOptions } = options;
   const method = (options.method || "GET").toUpperCase();
@@ -8,6 +8,7 @@ export const request = async (path, options = {}) => {
   });
   const data = await response.json().catch(() => ({}));
   if (fetchOptions.signal?.aborted) throw new DOMException("Request aborted", "AbortError");
+  if (response.headers?.get?.("X-Audit-Status") === "unconfirmed") window.dispatchEvent(new Event("audit:unconfirmed"));
   if (!response.ok) {
     if (response.status === 401 && notifyAuthFailure) window.dispatchEvent(new Event("auth:expired"));
     if (data.code === "PASSWORD_CHANGE_REQUIRED") window.dispatchEvent(new Event("auth:password-required"));

@@ -39,4 +39,5 @@ const updateClass = async (user, identifier, fields) => {
   const changes = {}; for (const key of ["semester", "section", "academicYear", "batch", "isActive"]) if (Object.hasOwn(fields, key)) changes[key] = fields[key];
   return persist(async () => safeClass(available(await ClassGroup.findOneAndUpdate(filter, { $set: changes }, { new: true, runValidators: true }).lean())));
 };
-module.exports = { listSubjects, getSubject, createSubject, updateSubject, listClasses, getClass, createClass, updateClass };
+const audit = require("./auditService");
+module.exports = { listSubjects, getSubject, createSubject: audit.academic("SUBJECT", createSubject), updateSubject: audit.academic("SUBJECT", updateSubject, true), listClasses, getClass, createClass: audit.academic("CLASS", createClass), updateClass: audit.academic("CLASS", updateClass, true) };

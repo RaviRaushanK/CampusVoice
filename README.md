@@ -2,9 +2,26 @@
 
 College Feedback, Survey and Grievance Management System built with the MERN stack.
 
-The application includes authentication/RBAC, profiles, notifications, academic management, Faculty feedback sessions/results, General Feedback, Private Suggestions, content moderation and routed complaints/grievances.
+**Phases 1-10: COMPLETE. CampusVoice Development: 100% COMPLETE.** Final validation results and operational limitations are documented in Phase 10 below.
+
+The application includes authentication/RBAC, profiles, notifications, academic management, Faculty feedback sessions/results, General Feedback, Private Suggestions, content moderation, routed complaints/grievances, scoped analytics, integrated DSA and privacy-safe administrative audit browsing.
+
+## Problem, objectives and roles
+
+CampusVoice gives a college one controlled workflow for teaching feedback, private suggestions and grievances, while keeping their different visibility rules intact. Its objectives are to route issues to the correct authority, preserve recipient anonymity, track complaint progress, summarize authorized activity, and demonstrate DSA against real persistent data.
+
+| Role | Main permissions |
+| --- | --- |
+| Principal | Departments/HODs, institution aggregate analytics, explicitly assigned/escalated complaints and sanitized audit browser |
+| HOD | Own-department Faculty/Students/curriculum/assignments, departmental feedback/analytics and explicitly assigned/escalated complaints |
+| Faculty | Own assignments/sessions/results, received General Feedback, own private Suggestions, assigned issues and personal analytics |
+| Student | Own profile/activity/history, eligible session responses and General Feedback, same-department private Suggestions and routed complaints |
+
+Higher roles do not automatically gain private-content access. Anonymous means recipient anonymity: internal Student references remain for integrity/ownership. Suggestions are author/selected-Faculty only; Principal General Feedback stays aggregate-only. Against-Faculty complaints bypass that Faculty; Against-HOD complaints go directly to Principal. These rules also constrain analytics, notifications, evidence and audit browsing.
 
 ## Technology Stack
+
+For setup, use Installation/Environment Setup and the explicit Principal seeder below. Phases 6–9 explain the business workflows and DSA; the final Phase 10 section covers audit design, hardening, release verification, deployment and a practical demo order.
 
 - Frontend: React, Vite, JavaScript, Bootstrap 5, Bootstrap Icons, React Router
 - Backend: Node.js, Express.js, MongoDB, Mongoose, dotenv
@@ -64,6 +81,8 @@ campusvoice/
 ```bash
 npm install
 ```
+
+There is one root `package.json` and lockfile shared by backend and frontend; do not run a separate frontend dependency install. For a clean reproducible checkout use `npm ci`. Obtain the repository from the Team Lead, run commands from its root, configure `.env`, start MongoDB, explicitly seed the Principal as documented below, then use `npm run dev` (or the separate backend/frontend scripts). No demo records are inserted automatically.
 
 ## Environment Setup
 
@@ -178,7 +197,7 @@ Concurrent seed runs use a database bootstrap lock. If a process is forcibly ter
 
 All state-changing `/api` requests, including login, require the exact configured `Origin` and `X-CSRF-Protection: 1` header. The React API client sends credentials and this header automatically. Requests without an Origin are intentionally rejected; non-browser API clients must supply both headers too. The header is a browser preflight defense, not a secret token; the exact Origin check and restricted credential-aware CORS are essential to it.
 
-JWTs are never returned in JSON or saved to browser storage. Cookies expire with `JWT_EXPIRES_IN` (`s`, `m`, `h` or `d` suffix). Production always uses secure cookies and requires HTTPS. Set `COOKIE_SAME_SITE=none` only for a deployment that needs cross-site cookies, with `COOKIE_SECURE=true`; browser third-party-cookie policies may still restrict those cookies. Prefer a same-site frontend/API deployment.
+JWTs are never returned in JSON or saved to browser storage. Cookies expire with `JWT_EXPIRES_IN` (`s`, `m`, `h` or `d` suffix, maximum 30 days). Production always uses secure cookies and requires HTTPS. Set `COOKIE_SAME_SITE=none` only for a deployment that needs cross-site cookies, with `COOKIE_SECURE=true`; browser third-party-cookie policies may still restrict those cookies. Prefer a same-site frontend/API deployment.
 
 `FRONTEND_ORIGIN` must be the exact frontend origin without a trailing slash. The root `.env` supplies both backend configuration and Vite's `VITE_API_BASE_URL`; restart development processes after changing it. Set `TRUST_PROXY_HOPS` to the actual trusted reverse-proxy count only when deployed behind one, and restrict direct backend access accordingly. It defaults to zero. Login and password-change limits are 10 failed requests per 15 minutes (per IP and per account, respectively); multi-process deployments need a shared rate-limit store.
 
@@ -266,11 +285,11 @@ All four roles share `/notifications`, accessible through the navbar bell and th
 
 One notification provider consumes AuthContext, holding only unread-count state. Counts refresh after authenticated session restoration, notification-page loads, successful read operations, and visible-tab changes. There is no polling timer and no WebSockets. Concurrent count refreshes are deduplicated; stale filter/count responses are ignored. Logout/account changes clear notification state and abort old requests; forced-password sessions do not fetch notifications. Count failures leave the navbar and dashboards usable, with retry available on the notification page.
 
-Notification fixtures are created only in guarded, isolated test databases using mandatory `TEST_MONGODB_URI`; no development notifications are seeded. Browser coverage exercises the shared notification UI and existing auth/profile flows for all four roles at 1440, 1024, 768, 375 and 320 pixels. Complaint, Feedback, and other future modules should call the internal creation service when their own business events are implemented.
+Notification fixtures are created only in guarded, isolated test databases using mandatory `TEST_MONGODB_URI`; no development notifications are seeded. Browser coverage exercises the shared notification UI and existing auth/profile flows for all four roles at 1440, 1024, 768, 375 and 320 pixels. Session publication, Suggestions and Complaint workflows call the internal creation service with neutral, ownership-scoped notifications.
 
 ## Scope and next phase
 
-Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 adds Faculty sessions, participation and results. Phase 7 adds General Feedback, Private Suggestions and moderation. Phase 8 adds routed complaints/grievances. Phase 9 adds authorized role analytics and integrated DSA processing, documented below. AI, Faculty rankings and Phase 10 remain deferred.
+Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 adds Faculty sessions, participation and results. Phase 7 adds General Feedback, Private Suggestions and moderation. Phase 8 adds routed complaints/grievances. Phase 9 adds authorized analytics and integrated DSA. Phase 10 finalizes audit logging, hardening, integration and documentation below. AI and Faculty rankings remain outside the project.
 
 Phase 5 supplies the academic foundation required by later feedback/session modules. It does not generate business notifications or implement those later modules.
 
@@ -474,7 +493,7 @@ Backend upload tests require and generate a unique `test-results/complaint-uploa
 
 ## Phase 9 — Role Analytics and DSA
 
-**Phase 9 — Analytics + DSA: COMPLETE.** Final full validation passed: 91 backend JavaScript/ESM files syntax-checked; 747 backend tests in 14 files (including 23 DSA unit tests); 331 frontend tests in 15 files; production build; eight browser-script syntax checks; new analytics/DSA test syntax; whitespace checks; and all 21 browser workflow checkpoints. No final tests failed or were skipped. Four-role regression passed at 1440/1024/768/375/320px, with focused Analytics/DSA workflows at 1440/320px. Phase 10 has not started.
+**Phase 9 — Analytics + DSA: COMPLETE.** Final full validation passed: 91 backend JavaScript/ESM files syntax-checked; 747 backend tests in 14 files (including 23 DSA unit tests); 331 frontend tests in 15 files; production build; eight browser-script syntax checks; new analytics/DSA test syntax; whitespace checks; and all 21 browser workflow checkpoints. No final tests failed or were skipped. Four-role regression passed at 1440/1024/768/375/320px, with focused Analytics/DSA workflows at 1440/320px. Phase 10 is documented below.
 
 The first development fingerprint comparison changed during implementation: the user confirmed signing into the Principal account; the observed User login/update timestamps changed and four empty model collections appeared. That activity was preserved, never reverted or hidden by overwriting the original manifests. A fresh controlled before/after comparison around **another complete backend/frontend/browser validation run** matched every collection count and document SHA-256 fingerprint. Controlled manifest SHA-256: `F6E5EAF1999CF83061EF8B9A845441D47B53F8E536473EDC5FC10FDDE4D03198` on both sides. Development remained 2 Departments, 1 User and zero records in all ten other collections. Original and controlled manifests are retained under ignored `test-results/`. Test evidence directories were cleaned and development uploads remained untouched.
 
@@ -549,4 +568,99 @@ Client department/Faculty/Student scope overrides are rejected. A valid foreign 
 
 Run full `npm run check:backend`, `test:backend`, `test:frontend`, `build:frontend` and `test:browser`, plus `git diff --check`. The syntax checker now includes `.mjs` utilities. DSA unit tests prove FIFO, heap invariants/large sample/priority ties, bounded Stack eviction, linked nodes/traversal, search boundaries and stable non-mutating Merge Sort. Analytics HTTP tests inspect complete JSON for privacy, department/owner/complaint exclusions, dates/zero buckets, participation parity (including rates over 100%), processing bounds/order, read-only persistence and authentication guards.
 
-Browser demonstrations use isolated real application records at 1440/320px: Principal/HOD/Faculty analytics, empty date periods, personal Student summary, FIFO vs Priority processing with oldest ties, literal/exact-ID search, builder Add/Edit/Reorder/Undo/Undo/Redo and normal Save, and linked timeline order. Full four-role regression remains at 1440/1024/768/375/320px. Tests retain guarded unique test databases and isolated evidence cleanup; development counts/fingerprints are compared before/after validation. AI analytics/sentiment/classification, Faculty ranking, PDF/Excel reporting, email/SMS reports and Phase 10 remain deferred.
+Browser demonstrations use isolated real application records at 1440/320px: Principal/HOD/Faculty analytics, empty date periods, personal Student summary, FIFO vs Priority processing with oldest ties, literal/exact-ID search, builder Add/Edit/Reorder/Undo/Undo/Redo and normal Save, and linked timeline order. Full four-role regression remains at 1440/1024/768/375/320px. Tests retain guarded unique test databases and isolated evidence cleanup; development counts/fingerprints are compared before/after validation. AI analytics/sentiment/classification, Faculty ranking, PDF/Excel reporting and email/SMS reports remain outside scope; Phase 10 is documented below.
+
+## Phase 10 — Final Integration, Security and Audit Logging
+
+**Status: COMPLETE (100%). Verified 3 November 2026.**
+
+Final validation: 818 backend tests (including all 23 DSA tests), 345 frontend tests, and 23 integrated browser checkpoints passed, with no failed or skipped cases in the final runs. All four roles passed responsive checks at 1440/1024/768/375/320px; complete critical workflows, including Audit Logs, passed at 1440/320px. Backend syntax passed across 99 files, plus 11 explicit test/browser scripts. The production build passed with only the two existing React Router `use client` module-directive warnings. Root and frontend npm audits each reported 0 critical/high/moderate/low/informational vulnerabilities. `git diff --check` passed.
+
+The original and controlled development baselines matched the final database: 1 User, 2 Departments and 0 records in each other existing collection; no AuditLog collection was created by startup/reads. Canonical before/after manifest SHA-256: `a050e09634f93721a48aa9e9f906aebad2a8a9e354dcecbe474f1c36bbb1a20d`. All per-collection hashes matched. Isolated test evidence and temporary upload directories were removed; development uploads remained untouched. Ignored verification reports/screenshots/logs are retained in `test-results/`. Changes remain uncommitted on `develop`; no push, merge or branch switch was performed.
+
+The architecture remains React View → REST API Route → thin Controller → Service → Mongoose Model → MongoDB. Controllers handle HTTP input/output; services own authorization, validation, persistence and workflows. Shared authentication, notifications, moderation, pagination, serializers and DSA are reused. No new business module, public registration, AI, messaging, email/SMS, report export or automatic escalation was added.
+
+### Administrative audit design
+
+`AuditLog`, `auditService`, centralized action constants and the Principal-only `/principal/audit-logs` page record administrative/security operations. `GET /api/audit-logs` supports action/resource-type/UTC date filters and standard page 1/limit 20 pagination, maximum 100. A bounded page loads actor display names in one query. There are no audit edit/delete/detail/reveal endpoints. Model query/save guards reject rewriting or deleting existing records. Database administrators and backups remain an operational trust boundary; application append-only storage is not a claim of cryptographic tamper-proofing.
+
+Audited operations include successful/failed authentication, logout, password changes, Department/HOD/Faculty/Student/Subject/Class/Faculty Assignment creation and updates/status changes, and complaint creation/status/escalation requests/escalation/priority/resolution/closure. Ordinary GETs, analytics/queue reads and individual Feedback, Suggestion or SessionResponse submissions are deliberately not audited. AuditLog never replaces the authoritative embedded ComplaintEvent timeline.
+
+Each important mutation first persists an immutable ATTEMPT, then runs the existing service and appends a separate SUCCEEDED/FAILED result with an internal correlation UUID. The Principal browser joins the result to its intent and shows one operation. Missing completion displays UNCONFIRMED. This supports standalone MongoDB without pretending two collections or a service callback share a replica-set transaction. An attempt may remain unconfirmed after a process/storage interruption; review the current business record before retrying. FAILED describes the service request result, not a transaction rollback guarantee.
+
+If the initial audit cannot persist, normal audited mutations/sign-in/password changes do not start and return a safe 503 `AUDIT_UNAVAILABLE`. If the business operation finishes but outcome logging fails, its result remains authoritative; a generic server warning and `X-Audit-Status: unconfirmed` are emitted. The shared frontend displays a dismissible uncertainty notice. A failed service request keeps its original safe error even if its audit outcome also fails. Logout is the deliberate exception: audit failure must not prevent security revocation or local cookie clearing. Revocation still runs, audit confirmation is reported honestly, and a database revocation failure is not presented as a successful logout.
+
+Audit metadata has an explicit allowlist: approved changed-field names, requested boolean activation state and controlled failure categories. It never copies field values, request bodies, attempted user codes/passwords, hashes, cookies/JWTs, headers, tokens, free-form errors, private text or evidence. IP/user-agent data is not collected. Actor/resource references are retained internally where appropriate; Student complaint actions omit the audit actor ID entirely. No historical audit records are invented or backfilled; the explicit Principal bootstrap remains an idempotent administrative setup command.
+
+### Audit privacy and access
+
+Only Principal can browse audit operations; HOD/Faculty/Student have neither the route nor navigation. All Complaint audit entries are excluded from this browser, its totals, filters and pagination, even when Principal could separately read a particular complaint. This prevents audit-derived existence leaks for un-escalated cases and excluded targets. Private Suggestions and anonymous feedback/answers have no audit linkage or audit statistics.
+
+Student authentication actors display only “Student account”; their internal IDs, name, USN and email never leave the audit API. Non-Student actors display a current account name and role without account IDs or email. No resource IDs, correlation UUIDs, raw nested documents or security fields are exposed. Student provisioning logs show action/changed-field labels, never the provisioned Student identity or credentials. These constraints are tested against complete HTTP responses, rather than relying on UI hiding.
+
+### Security review and hardening
+
+- HS256 JWTs remain in bounded HTTP-only cookies, with fixed issuer/audience and database-checked role/active/tokenVersion. No tokens enter JSON, localStorage or sessionStorage. Expiry now has an enforced 30-day maximum (default 8h). Production always sets Secure; local development still permits HTTP. Signature/expiry/first-login/inactive/revocation checks are unchanged.
+- Login rechecks current active role and tokenVersion when updating lastLoginAt, preventing a session from being issued from a stale security snapshot. Unknown/wrong-password/inactive logins share one safe response. Password updates retain compare-and-swap; logout revokes all account sessions and clears the cookie, including on an error response.
+- Global Origin plus `X-CSRF-Protection: 1` enforcement covers JSON, PATCH/DELETE, multipart and auth changes. Exact configurable CORS origin/credentials remain; there is no wildcard credential origin. `X-Audit-Status` is explicitly exposed to the frontend.
+- Login remains limited to 10 failed requests/IP/15 minutes; password changes to 10 failed requests/account/15 minutes. Authenticated mutations, including password changes, additionally share a generous 120/account/15-minute limit. Complaint submissions/escalation requests retain their tighter shared 30/account/15-minute limit. GETs and security logout are not blocked by the general mutation limiter.
+- API responses now set nosniff, DENY framing, no-referrer, a restrictive API-only CSP and camera/microphone/geolocation denial. Production adds HSTS. This API CSP is not applied to SPA HTML. Vite development/preview supply suitable frontend headers: production scripts self-only; no objects/framing; configured API connection origin; local HMR allowance only in development. Inline styles remain permitted for existing Bootstrap/CSS charts. Real production hosting must preserve the frontend headers at its HTTPS reverse proxy/static host.
+- Normal JSON/URL-encoded bodies remain 16 KB; the 2 MB JSON exception remains scoped to Feedback Sessions. Multipart remains complaint-only with explicit fields/parts/count/size limits. Query/body allowlists reject Mongo operators and mass assignment. Errors omit stack traces, connection details, paths and token internals; audit unavailability uses a deliberate safe exception message.
+- Anonymous serializers, department/Faculty ownership, complaint current/prior grants, Against-Faculty/Against-HOD exclusions, Principal aggregate-only Feedback and private Suggestions were reviewed and retained. Shared analytics never changes authorization because of a role label, priority or client scope parameter.
+- PDF/JPEG/PNG evidence remains optional/final, maximum 3 × 5 MB, validated by extension, MIME and magic bytes, with generated private filenames, authorized forced downloads, generic handler display names and failure cleanup. Magic-byte checks are not malware scanning or document-content redaction. Anonymous upload guidance remains factual, including the Safety/Urgent emergency disclaimer.
+
+### Dependencies, secrets and repository review
+
+Compatible transitive patches updated `body-parser` 1.20.8 → 1.20.9 and `qs` 6.16.0 → 6.16.2, without a forced major upgrade or added dependency. The former fixes malformed compressed-body denial of service; the latter fixes a stringify denial of service. A malformed compressed request regression also confirms the API stays available. Root and frontend use the same package/lockfile; `npm audit` was run from both directories, covering the shared full tree. Final reports are retained in ignored `test-results/` with exact severity counts.
+
+Tracked-source credential scanning identified only synthetic URI-preservation test fixtures (`testuser:fixture` on example/local hosts), not deployed credentials. `.env` remains ignored/untracked; `.env.example` holds configuration examples/empty credential placeholders. Vite exposes only intended `VITE_` configuration, not the server JWT/database secrets. Startup/seeder/verification output is retained where intentional; no application debugger/TODO/debug-print leftovers or browser token storage were found. Runtime logs, uploads, caches, dependency/build directories, coverage and test results are ignored.
+
+The unused placeholder DashboardPreview was removed. Disabled future menu items were removed; class context remains in real assignments, and HOD feedback in General Feedback/Analytics. Dashboards now give usable workspace guidance instead of promising later phases. Non-dashboard navbar headers identify the role workspace, while actual module headings remain distinct. Existing loading/empty/error/retry, processing locks, confirmations, visible keyboard focus, labelled controls, chart numbers and responsive layouts are preserved. Audit adds the same states and safe uncertainty messages.
+
+### Configuration and deployment
+
+`.env.example` lists all supported configuration: NODE_ENV/PORT, development MONGODB_URI, separate TEST_MONGODB_URI, optional COMPLAINT_UPLOAD_DIR, FRONTEND_ORIGIN, public VITE_API_BASE_URL, JWT_SECRET/JWT_EXPIRES_IN, cookie options, exact trusted-proxy hop count, and explicit Principal bootstrap values. JWT_SECRET requires at least 32 bytes; use a random value. Never commit real values. No separate Audit secret or credentials are required.
+
+For a production build, set public `VITE_API_BASE_URL=/api` for a same-origin HTTPS reverse-proxy deployment (or an explicit approved HTTPS API URL), then run `npm run build:frontend`. Output is `frontend/dist`. The client's production fallback is `/api`; development retains localhost:5000. Attachment links reuse the same API configuration. Serve static files and proxy `/api` to the backend, use `NODE_ENV=production`, configure the exact frontend origin/proxy hops, restrict database/evidence access and maintain TLS/backups. `npm run preview:frontend` is a local build preview, not a replacement for deployment operations or a tested external TLS environment.
+
+### Major API groups
+
+| Group | Purpose / scope |
+| --- | --- |
+| `/api/auth` | Cookie session/login/password/logout; no registration |
+| `/api/profile` | Authenticated own account only |
+| `/api/notifications` | Recipient-owned lists/read state |
+| `/api/departments`, `/hods`, `/faculty`, `/students`, `/subjects`, `/classes`, `/faculty-assignments`, `/academic/dashboard` | Principal/HOD management, Faculty own assignments and role dashboard |
+| `/api/feedback-sessions` | Owned Faculty lifecycle/results, eligible Student participation |
+| `/api/general-feedback` | Own submissions/recipient/department views; Principal aggregates only |
+| `/api/suggestions` | Author and selected Faculty only |
+| `/api/complaints` | Server routing, explicit ownership/handling grants, lifecycle and evidence |
+| `/api/analytics` | Authorized aggregates/personal summary and read-only processing views |
+| `/api/audit-logs` | Principal-only sanitized administrative/authentication audit browser |
+
+The earlier phase sections list detailed resource endpoints. Unsupported backend routes return controlled JSON 404; unknown frontend routes return the authenticated user's dashboard (or login/first-login recovery), not another role's view.
+
+### Final project-review demo
+
+Use institution-approved review accounts in a separately configured demonstration database where appropriate. The project does not automatically populate development data. Explicitly seed only the Principal; manually provision other records through the UI.
+
+1. Principal login/first-login password change: profile, Department and HOD management.
+2. HOD login: provision Faculty/Student, Subject, Class and Faculty Assignment; show department boundaries.
+3. Faculty login: inspect assignments, create a draft questionnaire, demonstrate add/edit/reorder/Undo/Redo, save and publish.
+4. Student login: notification, eligible questionnaire, Anonymous/Named choice, final submission and completed history.
+5. Submit General Feedback and a Private Suggestion; demonstrate recipient/HOD visibility and Principal aggregate-only/no-Suggestion access.
+6. Raise an Anonymous Faculty Issue with permitted evidence; demonstrate moderation rejection and clean revision.
+7. Faculty acknowledges/starts progress; Student requests escalation; Faculty escalates to HOD; show prior-handler read-only access and the safe linked timeline.
+8. Resolve/close through the allowed authorities/Student. Demonstrate Against-Faculty and Against-HOD exclusions and direct Safety/Urgent routing/disclaimer.
+9. Show additional unresolved authorized cases in FIFO and heap Priority processing, oldest ties and literal search; ordering never mutates status.
+10. Open each role's analytics/personal summary, date filters, numeric distributions and zero periods; demonstrate private-data exclusions.
+11. Principal opens Audit Logs, filters administrative/authentication operations and paginates; show masked Student actors and excluded Complaint/private-content records.
+12. Review notifications, profile/password/revocation and logout; repeat critical screens at 320px.
+
+### Testing, safety and known limitations
+
+Actual validation commands are `npm run check:backend`, `npm run test:backend`, `npm run test:frontend`, `npm run build:frontend`, `npm run test:browser` and `git diff --check`. New backend tests/browser scripts are syntax-checked explicitly; `tests/dsa.test.js` retains all 23 DSA cases. `npm audit` audits the shared backend/frontend dependency tree. All database fixtures require guarded unique `campusvoice_test_*` databases; evidence directories are isolated and removed even after failures. Screenshots, audit reports, test logs and fingerprint manifests are intentional ignored verification artifacts, not orphan evidence.
+
+Full integration includes all four roles at 1440/1024/768/375/320px and critical 1440/320px session, message, complaint, Analytics/DSA and Audit workflows. Before/after read-only development fingerprints verify record counts and SHA-256 hashes. If acknowledged real user activity changes the baseline, retain the original manifests and perform another controlled full verification; do not overwrite user data to make hashes match.
+
+Real limitations remain: notifications are in-app; no email/SMS, AI, public registration or report exports; no automatic complaint escalation/emergency response; recipient rather than database anonymity; evidence content may voluntarily identify its author; no antivirus/content redaction; current eligibility can make historical participation exceed 100%; processing views are bounded; inactive/transferred designated handlers are not silently reassigned. Audit is application-level, not retroactive or cryptographically tamper-proof, and unconfirmed outcomes require review. Production TLS/hosting/DB access/backup and retention operations remain deployment responsibilities. No additional development phase is introduced.

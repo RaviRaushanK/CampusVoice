@@ -5,6 +5,7 @@ const jwtExpiresIn = process.env.JWT_EXPIRES_IN || "8h";
 const duration = /^(\d+)(s|m|h|d)$/.exec(jwtExpiresIn);
 if (!duration || Number(duration[1]) <= 0) throw new Error("JWT_EXPIRES_IN must be a positive duration, e.g. 8h.");
 const jwtMaxAge = Number(duration[1]) * { s: 1000, m: 60000, h: 3600000, d: 86400000 }[duration[2]];
+if (!Number.isSafeInteger(jwtMaxAge) || jwtMaxAge > 30 * 86400000) throw new Error("JWT_EXPIRES_IN must not exceed 30 days.");
 const jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret || Buffer.byteLength(jwtSecret) < 32) throw new Error("Set JWT_SECRET to a random secret of at least 32 bytes.");
 const frontendOrigin = process.env.FRONTEND_ORIGIN || "http://localhost:5173";

@@ -162,7 +162,7 @@ it("a count failure leaves the list and navbar usable and provides a count retry
 });
 it.each(["PRINCIPAL", "HOD", "FACULTY", "STUDENT"])("%s opens the shared page from the navbar bell", async role => {
   auth.me.mockResolvedValue({ data: { ...user, role } }); open(`/${role.toLowerCase()}/dashboard`);
-  await screen.findByText("No recent activity yet");
+  await screen.findByText("Workspace ready");
   fireEvent.click(within(screen.getByRole("banner")).getByRole("link", { name: /^Notifications/ }));
   await loaded(); expect(screen.getByRole("heading", { name: "Notifications" })).toBeTruthy();
   expect(screen.getByRole("link", { name: "Notifications", exact: true }).getAttribute("href")).toBe("/notifications");

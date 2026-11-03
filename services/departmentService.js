@@ -20,4 +20,4 @@ const update = async (user, identifier, fields) => {
   for (const key of ["name", "code", "description", "isActive"]) if (Object.hasOwn(fields, key)) updateFields[key] = fields[key];
   return persist(async () => safe(available(await Department.findOneAndUpdate({ _id: id(identifier) }, { $set: updateFields }, { new: true, runValidators: true }).lean())));
 };
-module.exports = { list, get, create, update };
+module.exports = { list, get, create: require("./auditService").academic("DEPARTMENT", create), update: require("./auditService").academic("DEPARTMENT", update, true) };

@@ -31,6 +31,8 @@ import ComplaintList from "./components/complaints/ComplaintList";
 import ComplaintDetail from "./components/complaints/ComplaintDetail";
 import AnalyticsPage from "./components/analytics/AnalyticsPage";
 import ComplaintProcessing from "./components/analytics/ComplaintProcessing";
+import AuditLogs from "./pages/principal/AuditLogs";
+import AuditWarning from "./components/common/AuditWarning";
 
 const SharedRoleLayout = () => {
   const { user } = useAuth();
@@ -47,6 +49,7 @@ const App = () => {
   return (
     <AuthProvider>
       <NotificationProvider>
+      <AuditWarning />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/change-password" element={<ProtectedRoute allowPasswordChange><ChangePassword /></ProtectedRoute>} />
@@ -59,6 +62,7 @@ const App = () => {
           <Route path="/principal/feedback-overview" element={<FeedbackOverview />} />
           <Route path="/principal/complaints" element={<ComplaintList />} />
           <Route path="/principal/analytics" element={<AnalyticsPage />} />
+          <Route path="/principal/audit-logs" element={<AuditLogs />} />
           <Route path="/principal/complaint-processing" element={<ComplaintProcessing />} />
           <Route path="/principal/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>

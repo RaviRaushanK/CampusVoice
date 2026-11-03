@@ -12,5 +12,5 @@ router.use((req, res, next) => { res.set("Cache-Control", "no-store"); next(); }
 router.post("/login", loginLimiter, validateLogin, controller.login);
 router.get("/me", authenticate, controller.me);
 router.post("/logout", authenticate, controller.logout);
-router.post("/change-password", authenticate, passwordLimiter, validatePasswordChange, controller.changePassword);
+router.post("/change-password", authenticate, require("../middleware/mutationLimiter"), passwordLimiter, validatePasswordChange, controller.changePassword);
 module.exports = router;

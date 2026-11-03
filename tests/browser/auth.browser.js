@@ -24,7 +24,7 @@ let apiServer, vite, browser, database;
 
 const waitForDashboard = async (page, role) => {
   await page.waitForURL(`**/${role.toLowerCase()}/dashboard`);
-  await page.getByText("No recent activity yet").waitFor();
+  await page.getByText("Workspace ready").waitFor();
 };
 
 const checkLayout = async (page) => {

@@ -12,6 +12,8 @@ const errorHandler = require("./middleware/errorHandler");
 const app = express();
 app.disable("x-powered-by");
 app.set("trust proxy", env.trustProxy);
+app.use(require("./middleware/securityHeaders"));
+app.use((req, res, next) => require("./services/auditService").context.run(res, next));
 app.use((req, res, next) => {
   res.vary("Origin");
   if (req.get("Origin") === env.frontendOrigin) {
@@ -19,6 +21,7 @@ app.use((req, res, next) => {
     res.set("Access-Control-Allow-Credentials", "true");
     res.set("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
     res.set("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Protection");
+    res.set("Access-Control-Expose-Headers", "X-Audit-Status");
   }
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
@@ -39,6 +42,7 @@ app.use("/api/general-feedback", require("./routes/generalFeedbackRoutes"));
 app.use("/api/suggestions", require("./routes/suggestionRoutes"));
 app.use("/api/complaints", require("./routes/complaintRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
+app.use("/api/audit-logs", require("./routes/auditRoutes"));
 app.use("/api", academicRoutes);
 app.use(notFound);
 app.use(errorHandler);

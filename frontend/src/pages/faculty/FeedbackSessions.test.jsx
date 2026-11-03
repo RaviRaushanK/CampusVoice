@@ -149,7 +149,7 @@ it("does not show academic/security ID or status editors", async () => {
   await start(); for (const name of ["Department ID", "Subject ID", "Class ID", "Faculty ID", "Status"]) expect(screen.queryByLabelText(name)).toBeNull();
 });
 it.each(["PRINCIPAL", "HOD", "STUDENT"])("blocks %s at the Faculty builder route", async role => {
-  open("/my-sessions/new", role); await screen.findByText("No recent activity yet"); expect(academic.listAcademic).not.toHaveBeenCalled();
+  open("/my-sessions/new", role); await screen.findByText("Workspace ready"); expect(academic.listAcademic).not.toHaveBeenCalled();
 });
 it("first-login guard prevents session loading", async () => {
   open("/my-sessions", "FACULTY", { mustChangePassword: true }); await screen.findByText("First login - change your password"); expect(service.getMySessions).not.toHaveBeenCalled();
