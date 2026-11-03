@@ -152,7 +152,7 @@ test("lists newest-first with deterministic ties, pagination/status filters, rea
   expect((await call("get", "/mine?page=99")).body.data.items).toEqual([]);
   expect((await call("get", "/mine?status=OPEN")).body.data.items).toEqual([]);
   const dashboard = await request(app).get("/api/academic/dashboard").set("Cookie", `cv_auth=${signToken(faculty)}`);
-  expect(dashboard.body.data.metrics).toEqual({ "My Sessions": 3, "Draft Sessions": 3 });
+  expect(dashboard.body.data.metrics).toEqual({ "My Sessions": 3, "Draft Sessions": 3, "Open Sessions": 0, "Scheduled Sessions": 0, "Closed Sessions": 0 });
 });
 test.each(["PRINCIPAL", "HOD", "STUDENT"])("%s is blocked from every Faculty session endpoint", async role => {
   await User.updateOne({ _id: other._id }, { role }); const actor = await User.findById(other._id).select("+tokenVersion");

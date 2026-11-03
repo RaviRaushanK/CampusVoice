@@ -426,6 +426,12 @@ a {
 .student-questionnaire legend, .answer-option span { overflow-wrap: anywhere; }
 .answer-option { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.75rem; min-width: 0; }
 .answer-option input { flex-shrink: 0; }
+.session-results, .result-question, .result-distribution { min-width: 0; overflow-wrap: anywhere; }
+.result-option-label { flex: 1 1 12rem; min-width: 0; }
+.result-bar-track { width: 100%; height: 0.7rem; border-radius: 0.35rem; background: #e8edf5; overflow: hidden; }
+.result-bar-fill { height: 100%; background: var(--cv-primary); }
+.short-answer-card { padding: 1rem; border: 1px solid var(--cv-border); border-radius: var(--cv-radius); }
+.result-answer-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .auth-panel {
   width: 100%;

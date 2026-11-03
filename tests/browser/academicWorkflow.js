@@ -70,6 +70,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   const faculty = await addAccount({ path: "/faculty", heading: "Faculty Management", type: "Faculty", name: `Academic Faculty ${width}`, code: `academic.faculty.${width}`, email: `faculty.${width}@test.example` });
   const student = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Academic Student ${width}`, code: `1MV25MC${width}`, email: `student.${width}@test.example` });
   const wrongStudent = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Other Section Student ${width}`, code: `other.student.${width}`, email: `other.student.${width}@test.example`, studentSection: "B" });
+  const namedStudent = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Named Feedback Student ${width}`, code: `named.feedback.${width}`, email: `named.feedback.${width}@test.example` });
   await page.getByLabel("Search", { exact: true }).fill(student.userCode);
   await page.getByLabel("Semester filter", { exact: true }).selectOption("2");
   await page.getByLabel("Section filter", { exact: true }).fill("A");
@@ -104,7 +105,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   assert.equal(await page.getByRole("button", { name: "Edit", exact: true }).count(), 0);
   await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `academic-my-assignments-${width}.png`), fullPage: true });
   const feedback = await runFeedbackWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts });
-  await runResponseWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts, sessionId: feedback.id, student, wrongStudent, faculty, temporaryPassword, login, logout });
+  await runResponseWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts, sessionId: feedback.id, student, wrongStudent, namedStudent, faculty, temporaryPassword, login, logout });
   await page.getByText("Semester: 2", { exact: true }).waitFor();
   await page.getByText("Admission batch: 2025-2027", { exact: true }).waitFor(); await checkLayout(page);
   await logout(); await login("browser.principal", principalPassword, "PRINCIPAL");

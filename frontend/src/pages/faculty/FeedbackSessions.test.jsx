@@ -147,5 +147,9 @@ it.each(["OPEN", "SCHEDULED"])("confirms close from effective %s and removes act
 });
 it("effective expiry hides close and edit actions even with stored OPEN", async () => {
   service.getMySessions.mockResolvedValue(result([{ ...draft, status: "OPEN", availability: "CLOSED" }])); open();
-  const card = await screen.findByRole("article"); expect(within(card).getByText("CLOSED")).toBeTruthy(); expect(within(card).queryByRole("button")).toBeNull(); expect(within(card).queryByRole("link")).toBeNull();
+  const card = await screen.findByRole("article"); expect(within(card).getByText("CLOSED")).toBeTruthy(); expect(within(card).queryByRole("button")).toBeNull(); expect(within(card).getByRole("link", { name: "View Results" }).getAttribute("href")).toBe("/my-sessions/session/results");
+});
+it.each(["DRAFT", "OPEN", "CLOSED"])("%s has the correct Results entry point", async status => {
+  service.getMySessions.mockResolvedValue(result([{ ...draft, status, availability: status }])); open(); const card = await screen.findByRole("article");
+  const link = within(card).queryByRole("link", { name: "View Results" }); if (status === "DRAFT") expect(link).toBeNull(); else expect(link.getAttribute("href")).toBe("/my-sessions/session/results");
 });

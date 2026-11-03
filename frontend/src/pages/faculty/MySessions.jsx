@@ -60,6 +60,7 @@ const MySessions = () => {
         <p>Opens: {formatDate(session.opensAt)}<br />Closes: {formatDate(session.closesAt)}</p>
         {session.status === "DRAFT" && <div className="d-flex flex-wrap gap-2"><Link to={`/my-sessions/${session.id}/edit`} className="btn btn-outline-primary">Edit Draft</Link><button className="btn btn-outline-danger" disabled={deleting} onClick={() => { setLifecycle(null); setConfirmation(session); }}>Delete Draft</button><button className="btn btn-primary" disabled={deleting} onClick={() => { setConfirmation(null); setLifecycle({ session, action: "publish" }); }}>Publish Session</button></div>}
         {session.status === "OPEN" && session.availability !== "CLOSED" && <button className="btn btn-outline-danger" disabled={deleting} onClick={() => setLifecycle({ session, action: "close" })}>Close Session</button>}
+        {["OPEN", "CLOSED"].includes(session.status) && <Link className="btn btn-outline-primary ms-2" to={`/my-sessions/${session.id}/results`}>View Results</Link>}
       </article>)}</div>}
       {data.pagination.totalPages > 0 && <nav aria-label="Session pagination" className="d-flex flex-wrap gap-3 align-items-center"><button className="btn btn-outline-secondary" disabled={!data.pagination.hasPreviousPage || deleting} onClick={() => setPage(page - 1)}>Previous</button><span>Page {data.pagination.page} of {data.pagination.totalPages}</span><button className="btn btn-outline-secondary" disabled={!data.pagination.hasNextPage || deleting} onClick={() => setPage(page + 1)}>Next</button></nav>}
     </>}

@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const { resolve } = require("node:path");
-const runResponseWorkflow = async ({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, sessionId, student, wrongStudent, faculty, temporaryPassword, login, logout }) => {
+const { checkResultsWorkflow } = require("./resultsWorkflow");
+const runResponseWorkflow = async ({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, sessionId, student, wrongStudent, namedStudent, faculty, temporaryPassword, login, logout }) => {
   await page.goto(`${frontendOrigin}/my-sessions/${sessionId}/edit`);
   await page.getByLabel("Title", { exact: true }).fill(`Published lecture feedback ${width}`);
   await page.getByLabel("Opens At", { exact: true }).fill(""); await page.getByLabel("Closes At", { exact: true }).fill("");
@@ -10,7 +11,7 @@ const runResponseWorkflow = async ({ page, frontendOrigin, apiOrigin, width, art
   await page.getByRole("button", { name: "Save Draft", exact: true }).click(); await page.getByText("DRAFT session saved.", { exact: true }).waitFor();
   await page.getByRole("button", { name: "Publish Session", exact: true }).click(); await page.getByRole("alertdialog").waitFor(); await checkLayout(page);
   const publishing = page.waitForResponse(res => res.url() === `${apiOrigin}/api/feedback-sessions/${sessionId}/publish` && res.request().method() === "POST");
-  await page.getByRole("button", { name: "Confirm Publish", exact: true }).click(); const published = await publishing; assert.equal(published.status(), 200, await published.text()); assert.equal((await published.json()).data.notificationDelivery.sent, 1);
+  await page.getByRole("button", { name: "Confirm Publish", exact: true }).click(); const published = await publishing; assert.equal(published.status(), 200, await published.text()); assert.equal((await published.json()).data.notificationDelivery.sent, 2);
   await page.getByRole("button", { name: "Close Session", exact: true }).waitFor(); assert.equal(await page.getByRole("link", { name: "Edit Draft", exact: true }).count(), 0);
   await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `feedback-published-${width}.png`), fullPage: true });
   await logout(); await login(student.userCode, temporaryPassword, "STUDENT", true);
@@ -34,9 +35,15 @@ const runResponseWorkflow = async ({ page, frontendOrigin, apiOrigin, width, art
   await page.getByRole("button", { name: "Pending", exact: true }).click(); await page.getByText("No feedback sessions are waiting for your response.", { exact: true }).waitFor();
   await logout(); await login(wrongStudent.userCode, temporaryPassword, "STUDENT", true); await page.goto(`${frontendOrigin}/feedback-sessions`); await page.getByText("No feedback sessions are waiting for your response.", { exact: true }).waitFor();
   assert.equal((await page.request.get(`${apiOrigin}/api/feedback-sessions/${sessionId}/respond`)).status(), 404);
+  await logout(); await login(namedStudent.userCode, temporaryPassword, "STUDENT", true);
+  await page.goto(`${frontendOrigin}/feedback-sessions`); await page.getByRole("link", { name: "Give Feedback", exact: true }).click();
+  await page.getByLabel(single.options[1], { exact: true }).check(); await page.getByLabel("3", { exact: true }).check(); await page.getByLabel("Stacks", { exact: true }).check(); await page.getByLabel("Answer question 3", { exact: true }).fill(`Named feedback: more practice. ${"WorkedExamples".repeat(30)}`); await page.getByLabel("Reveal Identity", { exact: true }).check();
+  await page.getByRole("button", { name: "Submit Feedback", exact: true }).click(); await page.getByRole("button", { name: "Confirm Submission", exact: true }).click(); await page.getByText("Identity: Named (locked)", { exact: true }).waitFor();
   await logout(); await login(faculty.userCode, `Academic_FACULTY_${width}!`, "FACULTY"); await page.goto(`${frontendOrigin}/my-sessions`);
+  await checkResultsWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, sessionId, student, namedStudent, availability: "OPEN" });
   await page.getByRole("button", { name: "Close Session", exact: true }).click(); await checkLayout(page); await page.getByRole("button", { name: "Confirm Close", exact: true }).click(); await page.getByText("Session closed.", { exact: true }).waitFor();
   await page.getByRole("article").getByText("CLOSED", { exact: true }).waitFor(); await checkLayout(page);
+  await checkResultsWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, sessionId, student, namedStudent, availability: "CLOSED" });
   await logout(); await login(student.userCode, `Academic_STUDENT_${width}!`, "STUDENT");
   console.log(`PASS: Publish → eligible Student notification/discovery → all four answers → anonymous final submission → Completed → duplicate blocked → wrong-section privacy → Faculty close at ${width}px`);
 };

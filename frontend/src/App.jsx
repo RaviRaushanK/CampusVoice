@@ -9,6 +9,7 @@ import HodDashboard from "./pages/hod/HodDashboard";
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import MySessions from "./pages/faculty/MySessions";
 import SessionEditor from "./pages/faculty/SessionEditor";
+import SessionResults from "./pages/faculty/SessionResults";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import FeedbackSessions from "./pages/student/FeedbackSessions";
 import SessionQuestionnaire from "./pages/student/SessionQuestionnaire";
@@ -55,6 +56,7 @@ const App = () => {
           <Route path="/my-sessions" element={<MySessions />} />
           <Route path="/my-sessions/new" element={<SessionEditor />} />
           <Route path="/my-sessions/:sessionId/edit" element={<SessionEditor />} />
+          <Route path="/my-sessions/:sessionId/results" element={<SessionResults />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="STUDENT"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/feedback-sessions" element={<FeedbackSessions />} />

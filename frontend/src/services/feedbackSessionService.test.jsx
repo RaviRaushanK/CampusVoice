@@ -14,4 +14,6 @@ it("uses the shared cookie/CSRF API client for all session operations", () => {
   service.getStudentSessions(); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/student?page=1&limit=20&category=pending", {});
   service.getStudentSession("id"); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/respond", {});
   service.submitSessionResponse("id", { identityMode: "NAMED", answers: [] }); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/responses", { method: "POST", body: '{"identityMode":"NAMED","answers":[]}' });
+  service.getSessionResults("id"); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/results", {});
+  service.getShortAnswerResults("id", "question", { page: 2 }); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/results/questions/question/responses?page=2&limit=20", {});
 });

@@ -8,6 +8,8 @@ router.get("/student", requireRole("STUDENT"), controller.studentList);
 router.get("/:sessionId/respond", requireRole("STUDENT"), controller.studentGet);
 router.post("/:sessionId/responses", requireRole("STUDENT"), controller.submit);
 router.use(requireRole("FACULTY"));
+router.get("/:sessionId/results", controller.results);
+router.get("/:sessionId/results/questions/:questionId/responses", controller.shortAnswers);
 const emptyAction = (req, res, next) => {
   if (req.body !== undefined && (!req.body || typeof req.body !== "object" || Array.isArray(req.body) || Object.keys(req.body).length)) return next(require("../utils/authError")(400, "Lifecycle actions accept no body fields."));
   next();

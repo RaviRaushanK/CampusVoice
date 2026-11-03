@@ -6,6 +6,7 @@ const FacultyAssignment = require("../models/FacultyAssignment");
 const FeedbackSession = require("../models/FeedbackSession");
 const { safeDepartment, assertRole } = require("./academicSupport");
 const assignments = require("./assignmentService");
+const { state } = require("./feedbackAvailability");
 const getDashboard = async user => {
   assertRole(user, "PRINCIPAL", "HOD", "FACULTY", "STUDENT");
   if (user.role === "PRINCIPAL") {
@@ -19,8 +20,14 @@ const getDashboard = async user => {
     return { department: safeDepartment(department), metrics: Object.fromEntries(["Faculty", "Students", "Subjects", "Class Groups", "Active Assignments"].map((key, i) => [key, values[i]])) };
   }
   if (user.role === "FACULTY") {
-    const [myAssignments, total, drafts] = await Promise.all([assignments.list(user, { page: 1, limit: 5, status: "active" }), FeedbackSession.countDocuments({ facultyId: user._id }), FeedbackSession.countDocuments({ facultyId: user._id, status: "DRAFT" })]);
-    return { department: safeDepartment(department), assignments: myAssignments, metrics: { "My Sessions": total, "Draft Sessions": drafts } };
+    const metrics = { "My Sessions": 0, "Draft Sessions": 0, "Open Sessions": 0, "Scheduled Sessions": 0, "Closed Sessions": 0 };
+    const now = new Date();
+    for await (const session of FeedbackSession.find({ facultyId: user._id }).select("status opensAt closesAt -_id").lean().cursor()) {
+      metrics["My Sessions"]++;
+      const key = { DRAFT: "Draft Sessions", OPEN: "Open Sessions", SCHEDULED: "Scheduled Sessions", CLOSED: "Closed Sessions" }[state(session, now)];
+      metrics[key]++;
+    }
+    return { department: safeDepartment(department), assignments: await assignments.list(user, { page: 1, limit: 5, status: "active" }), metrics };
   }
   return { department: safeDepartment(department), semester: user.semester ?? null, section: user.section ?? null, batch: user.batch ?? null,
     metrics: await require("./studentFeedbackService").counts(user) };

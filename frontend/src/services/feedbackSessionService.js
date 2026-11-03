@@ -10,3 +10,5 @@ export const closeSession = id => request(`${path}/${encodeURIComponent(id)}/clo
 export const getStudentSessions = (query = {}, options = {}) => request(`${path}/student?${new URLSearchParams({ page: 1, limit: 20, category: "pending", ...query })}`, options);
 export const getStudentSession = (id, options = {}) => request(`${path}/${encodeURIComponent(id)}/respond`, options);
 export const submitSessionResponse = (id, fields) => request(`${path}/${encodeURIComponent(id)}/responses`, { method: "POST", body: JSON.stringify(fields) });
+export const getSessionResults = (id, options = {}) => request(`${path}/${encodeURIComponent(id)}/results`, options);
+export const getShortAnswerResults = (id, questionId, query = {}, options = {}) => request(`${path}/${encodeURIComponent(id)}/results/questions/${encodeURIComponent(questionId)}/responses?${new URLSearchParams({ page: 1, limit: 20, ...query })}`, options);
