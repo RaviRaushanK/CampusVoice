@@ -1,9 +1,9 @@
-const academicPaths = { principal: { Departments: "/departments", HODs: "/hods" }, hod: { Faculty: "/faculty", Students: "/students", Subjects: "/subjects", Classes: "/classes", "Faculty Assignments": "/faculty-assignments" }, faculty: { "My Subjects": "/my-assignments" } };
+const academicPaths = { principal: { Departments: "/departments", HODs: "/hods" }, hod: { Faculty: "/faculty", Students: "/students", Subjects: "/subjects", Classes: "/classes", "Faculty Assignments": "/faculty-assignments" }, faculty: { "My Assignments": "/my-assignments", "My Sessions": "/my-sessions" } };
 const navigation = (role, items) => [
   { label: "Dashboard", icon: "bi-speedometer2", path: `/${role}/dashboard` },
   ...items.map(([label, icon]) => ["Profile", "Notifications"].includes(label)
     ? { label, icon, path: label === "Profile" ? "/profile" : "/notifications" }
-    : academicPaths[role]?.[label] ? { label: role === "faculty" ? "My Assignments" : label, icon, path: academicPaths[role][label] } : { label, icon, disabled: true }),
+    : academicPaths[role]?.[label] ? { label, icon, path: academicPaths[role][label] } : { label, icon, disabled: true }),
   { label: "Change password", icon: "bi-key", path: "/change-password" },
   { label: "Logout", icon: "bi-box-arrow-right", action: "logout" },
 ];
@@ -20,8 +20,8 @@ export const hodNavItems = navigation("hod", [
   ["Notifications", "bi-bell"], ["Profile", "bi-person-circle"],
 ]);
 export const facultyNavItems = navigation("faculty", [
-  ["My Subjects", "bi-book"], ["My Classes", "bi-easel"],
-  ["Feedback Sessions", "bi-calendar-check"], ["General Feedback", "bi-clipboard-check"],
+  ["My Assignments", "bi-book"], ["My Classes", "bi-easel"],
+  ["My Sessions", "bi-calendar-check"], ["General Feedback", "bi-clipboard-check"],
   ["Suggestions", "bi-lightbulb"], ["Issues", "bi-exclamation-circle"],
   ["Analytics", "bi-bar-chart"], ["Notifications", "bi-bell"], ["Profile", "bi-person-circle"],
 ]);

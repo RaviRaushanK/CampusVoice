@@ -1,5 +1,6 @@
 const assert = require("node:assert/strict");
 const { resolve } = require("node:path");
+const { runFeedbackWorkflow } = require("./feedbackWorkflow");
 
 const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, principalPassword, temporaryPassword, checkLayout, artifacts }) => {
   const navigate = async (path, heading) => {
@@ -100,6 +101,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await page.getByRole("cell", { name: `${subject.code} — ${subject.name}`, exact: true }).waitFor();
   assert.equal(await page.getByRole("button", { name: "Edit", exact: true }).count(), 0);
   await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `academic-my-assignments-${width}.png`), fullPage: true });
+  await runFeedbackWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts });
   await logout(); await login(student.userCode, temporaryPassword, "STUDENT", true);
   await page.getByText("Semester: 2", { exact: true }).waitFor();
   await page.getByText("Admission batch: 2025-2027", { exact: true }).waitFor(); await checkLayout(page);

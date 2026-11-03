@@ -415,6 +415,14 @@ a {
   padding: calc(2 * var(--cv-space)) var(--cv-space);
 }
 
+.session-editor, .sessions-page, .question-card { min-width: 0; overflow-wrap: anywhere; }
+.session-editor fieldset { min-width: 0; }
+.session-editor input, .session-editor select, .session-editor textarea { min-width: 0; max-width: 100%; }
+.session-editor input[type="datetime-local"] { width: 100%; }
+.option-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.option-controls input { flex: 1 1 12rem; width: 0; }
+.session-editor .btn, .sessions-page .btn { white-space: normal; }
+
 .auth-panel {
   width: 100%;
   max-width: var(--cv-auth-width);

@@ -3,6 +3,7 @@ const User = require("../models/User");
 const Subject = require("../models/Subject");
 const ClassGroup = require("../models/ClassGroup");
 const FacultyAssignment = require("../models/FacultyAssignment");
+const FeedbackSession = require("../models/FeedbackSession");
 const { safeDepartment, assertRole } = require("./academicSupport");
 const assignments = require("./assignmentService");
 const getDashboard = async user => {
@@ -17,7 +18,10 @@ const getDashboard = async user => {
     const values = department ? await Promise.all([User.countDocuments({ ...filter, role: "FACULTY" }), User.countDocuments({ ...filter, role: "STUDENT" }), Subject.countDocuments(filter), ClassGroup.countDocuments(filter), FacultyAssignment.countDocuments({ ...filter, isActive: true })]) : [0, 0, 0, 0, 0];
     return { department: safeDepartment(department), metrics: Object.fromEntries(["Faculty", "Students", "Subjects", "Class Groups", "Active Assignments"].map((key, i) => [key, values[i]])) };
   }
-  if (user.role === "FACULTY") return { department: safeDepartment(department), assignments: await assignments.list(user, { page: 1, limit: 5, status: "active" }) };
+  if (user.role === "FACULTY") {
+    const [myAssignments, total, drafts] = await Promise.all([assignments.list(user, { page: 1, limit: 5, status: "active" }), FeedbackSession.countDocuments({ facultyId: user._id }), FeedbackSession.countDocuments({ facultyId: user._id, status: "DRAFT" })]);
+    return { department: safeDepartment(department), assignments: myAssignments, metrics: { "My Sessions": total, "Draft Sessions": drafts } };
+  }
   return { department: safeDepartment(department), semester: user.semester ?? null, section: user.section ?? null, batch: user.batch ?? null };
 };
 module.exports = { getDashboard };

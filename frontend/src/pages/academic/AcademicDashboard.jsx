@@ -27,7 +27,7 @@ const AcademicDashboard = ({ title }) => {
       </section>}
       {data.assignments && <section className="panel mb-3" aria-label="My teaching assignments"><h3 className="h5">My Teaching Assignments</h3><p>{data.assignments.pagination.total} active assignments</p>
         {data.assignments.items.length ? <ul>{data.assignments.items.map(assignment => <li key={assignment.id}>{assignment.subject?.code} — {assignment.subject?.name} / Semester {assignment.classGroup?.semester} {assignment.classGroup?.section} / {assignment.academicYear}{!assignment.isUsable && " (Inactive source)"}</li>)}</ul> : <p>No teaching assignments yet.</p>}
-        <Link to="/my-assignments" className="btn btn-outline-primary">View my assignments</Link>
+        <div className="d-flex flex-wrap gap-2"><Link to="/my-assignments" className="btn btn-outline-primary">View my assignments</Link><Link to="/my-sessions" className="btn btn-outline-primary">My Sessions</Link><Link to="/my-sessions/new" className="btn btn-primary">Create Session</Link></div>
       </section>}
     </>}
     <EmptyState title="No recent activity yet" message="An activity feed will be available when later modules are connected." icon="bi-clock-history" />

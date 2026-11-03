@@ -270,7 +270,7 @@ Notification fixtures are created only in guarded, isolated test databases using
 
 ## Scope and next phase
 
-Phase 1–4 authentication, profile, notification, shared-layout and health behavior is retained. Feedback sessions, general feedback, suggestions, complaints, analytics and DSA features are not implemented.
+Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 Part 1 adds Faculty feedback drafts. General feedback, suggestions, complaints, analytics and DSA features remain deferred.
 
 Phase 5 supplies the academic foundation required by later feedback/session modules. It does not generate business notifications or implement those later modules.
 
@@ -299,3 +299,25 @@ Department/Subject codes normalize uppercase. Subject uniqueness is department+c
 Assignment creation/reactivation verifies an active Faculty user, Subject and Class Group in the HOD's active Department, plus matching subject/class semester and assignment/class year. A partial unique index prevents duplicate active teaching relationships. Referenced Subject semesters and Class Group identities cannot be rewritten through management updates; create a new record instead. Assignment references remain historical and immutable. Deactivating Departments/accounts/curriculum does not delete or cascade-delete history. Inactive Departments block HOD management operations; account status separately controls login. Retained active assignments with an inactive source are labelled accordingly and return `isUsable: false`; future session services must revalidate current source status before use.
 
 All academic tests and browser provisioning workflows use mandatory `TEST_MONGODB_URI` with the existing guarded isolated databases. The browser suite creates Department → HOD → Faculty/Student/Subject/Class → Assignment through the real UI at 1440/320px, verifies new-user password changes and Faculty/Student visibility, and preserves four-role regression coverage at all five widths. No development academic data is seeded. CSV/Excel student import is intentionally deferred.
+
+## Phase 6 Part 1 — Faculty Session Builder
+
+Faculty manage their own sessions at `/my-sessions`, create at `/my-sessions/new`, and edit at `/my-sessions/:sessionId/edit`. The dashboard displays real My Sessions and Draft Sessions counts. Creation loads the existing paginated Faculty assignment API, permits only usable active assignments, and revalidates the owned assignment and its active Department/Faculty/Subject/Class sources on the server. Department, Subject and Class references derive from that assignment. Assignment and ownership references are immutable after creation; retained drafts remain editable if an academic source is later retired.
+
+`FeedbackSession` embeds questions with stable server-generated subdocument IDs. Array order is canonical: moving a question preserves its ID, removing it omits it from the next draft update, and new questions omit `id`. Foreign/duplicate IDs are rejected. Types are `SINGLE_CHOICE`, `MULTI_SELECT`, `RATING` (fixed 1–5) and `SHORT_ANSWER`, with required/optional flags. Drafts can contain zero questions, up to 50. Choice questions need 2–20 nonblank options, unique after Unicode normalization, whitespace normalization and case folding. Limits: title 160, description 2000, prompt 1000, option 200 characters. The existing 16 KB JSON request limit also applies, so a save must fit that overall budget even when individual fields fit their limits.
+
+New sessions always save as `DRAFT`; schema constants reserve `OPEN`/`CLOSED` for later. Only owned DRAFT sessions may be edited or hard-deleted. PATCH explicitly accepts title, description, questions, `allowAnonymous`, `opensAt` and `closesAt`; all other fields are rejected. Partial date updates validate against stored dates; optional dates can be cleared with null. API timestamps require a timezone and persist UTC instants; browser inputs display local time. Closing must be strictly after opening when both exist. `allowAnonymous` defaults true and permits a future student choice; it does not automatically anonymize responses.
+
+| Endpoint | Behavior |
+| --- | --- |
+| `GET /api/feedback-sessions/mine` | Own sessions, deterministic newest-first order; `page=1`, `limit=20` (max 100), `status=all\|DRAFT\|OPEN\|CLOSED` |
+| `GET /api/feedback-sessions/:sessionId` | Own session and questionnaire |
+| `POST /api/feedback-sessions` | Create DRAFT using `facultyAssignmentId` and editable fields |
+| `PATCH /api/feedback-sessions/:sessionId` | Update own DRAFT, including complete ordered question array |
+| `DELETE /api/feedback-sessions/:sessionId` | Hard-delete own DRAFT only |
+
+All five endpoints require Faculty authentication and completed first-login password change. Existing inactive-account, token-revocation and CSRF rules apply. Queries scope ownership before loading documents; responses include explicit academic projections and never populate User security data. Conditional DRAFT/version writes prevent updates racing a future publication or another in-flight save. Faculty/date and Faculty/status/date indexes support the actual list/count queries. No draft action creates notifications.
+
+Backend tests cover models, validation, assignment/department checks, IDOR, lifecycle, RBAC, CSRF and authentication guards. Frontend tests cover list states, builder operations, retries, field whitelists, immutable assignments and role guards. The browser suite extends the existing HOD provisioning → Faculty assignment workflow with draft creation/editing at 1440/320px while retaining all-role checks at 1440/1024/768/375/320px. All test writes use uniquely named guarded `TEST_MONGODB_URI` databases. Optional `node scripts/databaseFingerprint.js` reads and hashes development collections without modifying records, for before/after comparisons.
+
+Phase 6 is not complete. Student discovery, publishing/opening/automatic closing, SessionResponse, student submission, one-response enforcement, student anonymity choice, results, analytics and session notifications are intentionally deferred.

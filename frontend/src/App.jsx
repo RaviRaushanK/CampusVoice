@@ -7,6 +7,8 @@ import StudentLayout from "./layouts/StudentLayout";
 import PrincipalDashboard from "./pages/principal/PrincipalDashboard";
 import HodDashboard from "./pages/hod/HodDashboard";
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
+import MySessions from "./pages/faculty/MySessions";
+import SessionEditor from "./pages/faculty/SessionEditor";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import Login from "./pages/auth/Login";
 import ChangePassword from "./pages/auth/ChangePassword";
@@ -48,6 +50,9 @@ const App = () => {
         </Route>
         <Route element={<ProtectedRoute expectedRole="FACULTY"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/my-assignments" element={<MyAssignments />} />
+          <Route path="/my-sessions" element={<MySessions />} />
+          <Route path="/my-sessions/new" element={<SessionEditor />} />
+          <Route path="/my-sessions/:sessionId/edit" element={<SessionEditor />} />
         </Route>
 
         <Route

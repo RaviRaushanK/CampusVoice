@@ -1,0 +1,12 @@
+const router = require("express").Router();
+const { protect } = require("../middleware/authMiddleware");
+const { requireRole } = require("../middleware/roleMiddleware");
+const controller = require("../controllers/feedbackSessionController");
+router.use((req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
+router.use(protect, requireRole("FACULTY"));
+router.get("/mine", controller.list);
+router.get("/:sessionId", controller.get);
+router.post("/", controller.create);
+router.patch("/:sessionId", controller.update);
+router.delete("/:sessionId", controller.remove);
+module.exports = router;

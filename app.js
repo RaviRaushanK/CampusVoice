@@ -31,6 +31,7 @@ app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/feedback-sessions", require("./routes/feedbackSessionRoutes"));
 app.use("/api", academicRoutes);
 app.use(notFound);
 app.use(errorHandler);
