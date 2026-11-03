@@ -1,0 +1,4 @@
+export const TYPES = ["FACULTY_ISSUE", "AGAINST_FACULTY", "DEPARTMENT_ISSUE", "AGAINST_HOD", "COLLEGE_CAMPUS", "SAFETY_URGENT"];
+export const STATUSES = ["SUBMITTED", "ACKNOWLEDGED", "IN_PROGRESS", "ESCALATED", "RESOLVED", "CLOSED"];
+export const label = value => value.toLowerCase().replaceAll("_", " ").replace(/\b\w/g, letter => letter.toUpperCase());
+export const explanations = { FACULTY_ISSUE: "This issue will be sent to the selected Faculty member.", AGAINST_FACULTY: "This complaint will be reviewed by your HOD. The selected Faculty member will not receive it.", DEPARTMENT_ISSUE: "This complaint will be reviewed by your HOD.", AGAINST_HOD: "This complaint will be sent directly to the Principal. Your HOD will not receive it.", COLLEGE_CAMPUS: "This complaint will be sent directly to the Principal.", SAFETY_URGENT: "This complaint will be sent directly to the Principal with Urgent priority." };

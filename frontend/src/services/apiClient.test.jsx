@@ -8,6 +8,15 @@ it("sends cookies and a non-simple CSRF header for state changes", async () => {
   expect(fetch.mock.calls[0][1].credentials).toBe("include");
   expect(fetch.mock.calls[0][1].headers["X-CSRF-Protection"]).toBe("1");
 });
+it("multipart preserves cookies/CSRF and lets the browser set its boundary while JSON keeps its content type", async () => {
+  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }); vi.stubGlobal("fetch", fetch);
+  const body = new FormData(); body.append("type", "DEPARTMENT_ISSUE");
+  await request("/complaints", { method: "POST", body });
+  const upload = fetch.mock.calls[0][1];
+  expect(upload.body).toBe(body); expect(upload.credentials).toBe("include"); expect(upload.headers["X-CSRF-Protection"]).toBe("1"); expect(upload.headers).not.toHaveProperty("Content-Type");
+  await request("/complaints/case/acknowledge", { method: "POST", body: "{}" });
+  expect(fetch.mock.calls[1][1].headers["Content-Type"]).toBe("application/json");
+});
 it("handles empty logout responses", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => { throw new Error("empty"); } }));
   expect(await request("/auth/logout", { method: "POST" })).toEqual({});

@@ -85,7 +85,8 @@ it("expired-session events remove protected content", async () => {
 it.each(roles)("%s keeps role-specific future navigation visible but disabled", async role => {
   auth.me.mockResolvedValue({ data: profile(role) }); open(`/${role.toLowerCase()}/dashboard`);
   await screen.findByText("No recent activity yet");
-  const expected = { PRINCIPAL: "Complaints", HOD: "Academic Feedback", FACULTY: "Analytics", STUDENT: "Raise Complaint" };
+  const expected = { PRINCIPAL: "Analytics", HOD: "Academic Feedback", FACULTY: "Analytics", STUDENT: null };
+  if (role === "STUDENT") { expect(screen.getByRole("link", { name: "Raise Complaint" }).getAttribute("href")).toBe("/student/complaints/new"); return; }
   const placeholder = screen.getByRole("button", { name: expected[role] });
   expect(placeholder.disabled).toBe(true);
   expect(screen.queryByRole("link", { name: expected[role] })).toBeNull();

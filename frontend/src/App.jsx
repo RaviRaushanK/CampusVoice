@@ -26,6 +26,9 @@ import FacultyGeneralFeedback from "./pages/faculty/GeneralFeedback";
 import FacultySuggestions from "./pages/faculty/Suggestions";
 import DepartmentGeneralFeedback from "./pages/hod/GeneralFeedback";
 import FeedbackOverview from "./pages/principal/FeedbackOverview";
+import RaiseComplaint from "./pages/student/RaiseComplaint";
+import ComplaintList from "./components/complaints/ComplaintList";
+import ComplaintDetail from "./components/complaints/ComplaintDetail";
 
 const SharedRoleLayout = () => {
   const { user } = useAuth();
@@ -52,12 +55,16 @@ const App = () => {
         <Route element={<ProtectedRoute expectedRole="PRINCIPAL"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/departments" element={<Departments />} /><Route path="/hods" element={<Hods />} />
           <Route path="/principal/feedback-overview" element={<FeedbackOverview />} />
+          <Route path="/principal/complaints" element={<ComplaintList />} />
+          <Route path="/principal/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="HOD"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/faculty" element={<Faculty />} /><Route path="/students" element={<Students />} />
           <Route path="/subjects" element={<Subjects />} /><Route path="/classes" element={<Classes />} />
           <Route path="/faculty-assignments" element={<FacultyAssignments />} />
           <Route path="/hod/general-feedback" element={<DepartmentGeneralFeedback />} />
+          <Route path="/hod/complaints" element={<ComplaintList />} />
+          <Route path="/hod/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="FACULTY"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/my-assignments" element={<MyAssignments />} />
@@ -67,12 +74,17 @@ const App = () => {
           <Route path="/my-sessions/:sessionId/results" element={<SessionResults />} />
           <Route path="/faculty/general-feedback" element={<FacultyGeneralFeedback />} />
           <Route path="/faculty/suggestions" element={<FacultySuggestions />} />
+          <Route path="/faculty/complaints" element={<ComplaintList />} />
+          <Route path="/faculty/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="STUDENT"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/feedback-sessions" element={<FeedbackSessions />} />
           <Route path="/feedback-sessions/:sessionId/respond" element={<SessionQuestionnaire />} />
           <Route path="/student/general-feedback" element={<StudentGeneralFeedback />} />
           <Route path="/student/suggestions" element={<StudentSuggestions />} />
+          <Route path="/student/complaints/new" element={<RaiseComplaint />} />
+          <Route path="/student/complaints" element={<ComplaintList />} />
+          <Route path="/student/complaints/:complaintId" element={<ComplaintDetail />} />
         </Route>
 
         <Route

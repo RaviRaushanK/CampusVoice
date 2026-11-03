@@ -2,7 +2,7 @@
 
 College Feedback, Survey and Grievance Management System built with the MERN stack.
 
-The foundation includes authentication/RBAC, profile/account management, shared notifications, and college/academic management.
+The application includes authentication/RBAC, profiles, notifications, academic management, Faculty feedback sessions/results, General Feedback, Private Suggestions, content moderation and routed complaints/grievances.
 
 ## Technology Stack
 
@@ -270,7 +270,7 @@ Notification fixtures are created only in guarded, isolated test databases using
 
 ## Scope and next phase
 
-Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 — Feedback & Survey System is complete: Faculty session building/publishing, Student participation, and privacy-safe Faculty results with question analytics. Phase 7 adds General Feedback, Private Suggestions and shared content moderation below. Complaints, advanced institution/department analytics and DSA features remain deferred.
+Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 adds Faculty session building/publishing, Student participation, and privacy-safe Faculty results. Phase 7 adds General Feedback, Private Suggestions and shared content moderation. Phase 8 adds routed complaints/grievances, documented below. Advanced institution/department analytics, DSA and AI features remain deferred.
 
 Phase 5 supplies the academic foundation required by later feedback/session modules. It does not generate business notifications or implement those later modules.
 
@@ -348,7 +348,7 @@ Student UI routes are `/feedback-sessions` and `/feedback-sessions/:sessionId/re
 
 Backend/frontend tests cover lifecycle, eligibility, privacy, all answer types, duplicate/concurrent submission, notification failures and security guards. The isolated browser workflow covers Faculty publication → eligible Student notification/questionnaire → final submission/Completed → duplicate rejection → wrong-section privacy → Faculty Close at 1440/320px, preserving all-role regression at 1440/1024/768/375/320px. Development database fingerprints can be compared using the existing read-only utility.
 
-Part 3 adds Faculty results and question analytics as described below. CSV export is optional and deferred. Advanced institution/department analytics, general feedback/moderation, Suggestions and Complaints remain later work.
+Part 3 adds Faculty results and question analytics as described below. CSV export is optional and deferred. General Feedback/moderation, Suggestions and Complaints are documented in Phases 7–8 below. Advanced institution/department analytics remain deferred.
 
 ## Phase 6 Part 3 — Faculty Results and Session Analytics
 
@@ -366,11 +366,11 @@ Short answers load on demand through `GET /api/feedback-sessions/:sessionId/resu
 
 The Results page uses shared loading/alert/stat/layout components, question cards, responsive CSS bar charts with adjacent readable counts/percentages, paginated text cards, empty states, retries, and manual Refresh. Charts add no dependencies and never replace numeric data. There is no automatic analytics polling, anonymous-identity reveal endpoint, generic raw-response listing, CSV export, AI analysis or cross-Faculty analytics. Backend HTTP tests inspect complete responses for anonymous identity leakage; frontend and isolated browser tests cover both Anonymous and Named display.
 
-Part 1/2 body limits, notifications, response finality, uniqueness, identity lock, eligibility and availability behavior are retained. The 2 MB JSON allowance remains limited to Feedback Session resources; other JSON and all URL-encoded requests remain at 16 KB. Tests use guarded isolated databases, with read-only development fingerprints before/after verification. Phase 7 extends moderation to new Session SHORT_ANSWER submissions. Complaints/routing, advanced HOD/Principal analytics, DSA and AI analysis remain outside this implementation.
+Part 1/2 body limits, notifications, response finality, uniqueness, identity lock, eligibility and availability behavior are retained. The 2 MB JSON allowance remains limited to Feedback Session resources; other JSON and all URL-encoded requests remain at 16 KB. Tests use guarded isolated databases, with read-only development fingerprints before/after verification. Phase 7 extends moderation to new Session SHORT_ANSWER submissions. Complaints/routing are documented under Phase 8; advanced HOD/Principal analytics, DSA and AI analysis remain deferred.
 
 ## Phase 7 — General Feedback, Private Suggestions and Content Moderation
 
-**Phase 7 — General Feedback + Private Suggestions + Content Moderation: COMPLETE.** Validation passed: 71 backend files syntax-checked, 596 backend tests, 267 frontend tests, production build, six browser-script syntax checks, and the full four-role browser suite at 1440/1024/768/375/320px with focused Phase 7 flows at 1440/320px. No tests failed or were skipped. Development collection counts and SHA-256 fingerprints remained identical before/after validation. Phase 8 remains deferred.
+**Phase 7 — General Feedback + Private Suggestions + Content Moderation: COMPLETE.** Validation passed: 71 backend files syntax-checked, 596 backend tests, 267 frontend tests, production build, six browser-script syntax checks, and the full four-role browser suite at 1440/1024/768/375/320px with focused Phase 7 flows at 1440/320px. No tests failed or were skipped. Development collection counts and SHA-256 fingerprints remained identical before/after validation. Phase 8 is documented below.
 
 Students submit General Feedback through `/student/general-feedback`, choosing a server-derived active teaching assignment relevant to their current Department, semester, normalized section and batch (when the class specifies one). The existing assignment usability checks verify active Department/Faculty/Subject/Class sources, matching academic year/semester and consistent departments. Options are paginated; submission revalidates the relationship. The server derives Student, Faculty, Subject and Department references. Rating is integer 1–5; trimmed messages are 10–2000 characters. Feedback is final, with no edit/delete/identity-changing endpoints, and students may submit again in the future without a lifetime uniqueness constraint.
 
@@ -401,4 +401,73 @@ Moderation runs before persistence for General Feedback, Suggestions and Session
 | `GET /api/suggestions/received` | Faculty: own private inbox |
 | `GET /api/suggestions/:id` | Author Student or selected Faculty only |
 
-All endpoints reuse HTTP-only JWT authentication, role/first-login/account-revocation guards, explicit field validation, CSRF and existing error handling. Both new resources retain the normal 16 KB JSON limit. No dependencies, alternate authentication, message queue, Complaints, attachments, routing/escalation, advanced analytics, DSA or AI moderation were introduced. Automated tests use guarded isolated databases and development collection fingerprints; focused browser workflows cover both desktop/mobile and preserve four-role regression at all five widths.
+All Phase 7 endpoints reuse HTTP-only JWT authentication, role/first-login/account-revocation guards, explicit field validation, CSRF and existing error handling. Both message resources retain the normal 16 KB JSON limit. Phase 7 introduced no dependencies, alternate authentication, message queue, Complaints, attachments, routing/escalation, advanced analytics, DSA or AI moderation. Automated tests use guarded isolated databases and development collection fingerprints; focused browser workflows cover both desktop/mobile and preserve four-role regression at all five widths.
+
+## Phase 8 — Complaint & Grievance Management
+
+**Phase 8 — Complaint & Grievance Management System: COMPLETE.** Full validation passed: 80 backend files syntax-checked; 686 backend tests (12 files); 310 frontend tests (14 files); production build; seven browser-script syntax checks; upload middleware/utility and new backend-test syntax checks; and the complete four-role browser regression at 1440/1024/768/375/320px. Focused complaint workflows passed at 1440/320px. There were zero failed or skipped tests. All test evidence directories were cleaned, development uploads remained untouched, and before/after development collection counts and SHA-256 fingerprints matched. Phase 9 has not started.
+
+Students raise final complaints at `/student/complaints/new`, track their own paginated/filterable history at `/student/complaints`, and open details at `/student/complaints/:complaintId`. Faculty, HOD and Principal use `/<role>/complaints` and the corresponding detail route. Shared detail cards include status, priority, handling level, evidence, an actual vertical timeline, resolution and only currently permitted actions. Loading, empty, error/retry, processing, confirmations and notification-delivery failure states reuse the existing UI. Complaint creation and every action prevent duplicate clicks. Filters cover status/type plus handler priority; lists default to page 1/limit 20, maximum 100, newest createdAt/_id first.
+
+### Routing and access
+
+| Type | Initial authority | Internal escalation |
+| --- | --- | --- |
+| `FACULTY_ISSUE` | Selected, academically relevant Faculty | Faculty → HOD → Principal |
+| `AGAINST_FACULTY` | Student's active Department HOD | HOD → Principal |
+| `DEPARTMENT_ISSUE` | Student's active Department HOD | HOD → Principal |
+| `AGAINST_HOD` | Active Principal; target HOD derived from Student's Department | None |
+| `COLLEGE_CAMPUS` | Active Principal | None |
+| `SAFETY_URGENT` | Active Principal, automatic URGENT priority | None |
+
+Routing is centralized in `utils/constants/complaints.js` and enforced in `complaintService`. The Student chooses a type, never a handling authority or priority. Faculty-required types select a usable real FacultyAssignment option (`facultyAssignmentId`); submission reuses Phase 7 revalidation for active Department/Faculty/Subject/Class, department consistency, semester, normalized section, applicable batch and academic year. The actual target Faculty ID is derived server-side. Options expose only assignment IDs, display context, type/identity choices and evidence limits, without HOD/Principal/handler IDs. HOD resolution requires one active HOD in the original Department; Principal resolution requires exactly one active Principal. Missing/inactive/ambiguous authority returns a controlled conflict, without fallback to another routing level.
+
+Only the Student author and explicitly assigned current/prior handlers may read a complaint or evidence. An HOD's department membership alone grants no access; Principal has no unrestricted complaint view. `AGAINST_FACULTY` explicitly excludes its target from reads/actions/inboxes/counts/notifications, before and after escalation. `AGAINST_HOD` excludes its target HOD completely. A Faculty Issue is initially hidden from HOD/Principal; Department Issues are initially hidden from Principal. Current/prior Faculty/HOD grants also require their present role and department to match the original context. Transfers do not move historical complaints into another department, and author history survives a Student transfer.
+
+Original Student, Department, type, targets, identity choice, initial routing context, content, attachments and createdAt are immutable. Inactive handlers cannot use stale sessions. Cases are not automatically reassigned when account holders change; explicit grants remain tied to the original account and role. Restoring the designated account/context or a separately designed audited reassignment process is necessary if that account can no longer handle the case; Phase 8 does not silently grant a replacement account access.
+
+### Lifecycle, timeline and concurrency
+
+The central state machine permits `SUBMITTED → ACKNOWLEDGED → IN_PROGRESS → RESOLVED → CLOSED`. An unresolved complaint can escalate Faculty → HOD or HOD → Principal, setting `ESCALATED`; the new current authority acknowledges `ESCALATED → ACKNOWLEDGED` before starting progress/resolving. No internal escalation beyond Principal, direct unresolved closure, reopening, generic editing or deletion exists. Only the current assigned handler performs handler actions. Only the Student author closes a RESOLVED case.
+
+The Student can request escalation on their own unresolved case only when another authority exists and no request is pending at that level. A moderated reason of 10–1000 characters records `ESCALATION_REQUESTED` and notifies the current handler; it does not reroute. Actual handler escalation increments the level, clears the pending request, records `ESCALATED` and grants the actual prior handler read-only access. Resolution clears any pending request and requires a moderated 10–2000 character summary; resolvedAt/closedAt are retained.
+
+`models/ComplaintEvent.js` defines the immutable event subdocument model embedded in Complaint. Every submission, acknowledgement, progress step, escalation request, escalation, priority change, resolution and closure appends a timestamped event with internal actor/context. The canonical event and state change share **one atomic Complaint write**. This deliberately avoids a second independently written history collection and does not require replica-set transactions or claim they work on standalone MongoDB. Actions use a version/current-handler/status conditional update, incrementing `__v`; concurrent/stale losers receive 409 without an extra event or notification. No endpoint rewrites/removes events. Finite workflow levels, one request per level and upward-only priority changes bound history growth.
+
+Priority begins NORMAL except Safety/Urgent, which begins URGENT. Only the current handler may raise an unresolved case to HIGH/URGENT. Lowering or unchanged priority is rejected; every successful change appends `PRIORITY_CHANGED`. Safety/Urgent cannot be downgraded. Its form displays: “CampusVoice is not a substitute for emergency services or immediate emergency assistance.” There is no promise of immediate response or automatic timed escalation.
+
+### Identity, moderation and evidence
+
+Anonymous is the default and remains recipient anonymity; the internal Student reference is always retained. Mongo projections remove anonymous Student IDs before response mapping and remove all event actor IDs. Anonymous recipients see Anonymous and Anonymous Student timeline actors, without a correlatable anonymous user identifier. Named handlers receive only Student `name` and `userCode`, batch-loaded once for the current page. DTOs never expose Student account IDs, email/security fields, raw routing grants, disk paths or storage filenames. Author views show You in the timeline. There is no reveal endpoint.
+
+The Phase 7 moderation service is reused for complaint title (trimmed 5–150), description (trimmed 20–5000), escalation reason and resolution summary. Blocked text rejects before mutation or file persistence, with the existing exact rejection message. No second moderation implementation or text rewriting was added.
+
+Evidence is optional and final: up to **3 files**, **5 MB each**, only PDF, JPEG/JPG or PNG. Route-scoped Multer memory parsing bounds files, fields, parts and sizes, then checks extension, declared MIME and file magic bytes. No uploaded file is written until authorization, routing and text/evidence validation pass. Private disk names use UUIDs with exclusive creation; normalized basename metadata is never used as a path. The default storage directory is `uploads/complaints/`, configurable server-side with `COMPLAINT_UPLOAD_DIR`. No static directory exposes it. Written files are cleaned on failed writes; parsing/validation/auth failures create no disk files.
+
+Every download authenticates and rechecks complaint ownership/explicit handling grants and attachment membership. Responses force download with the validated MIME, generic Attachment-N filename, no-store and nosniff. Handlers always receive generic Attachment N labels, including for Named cases; only the author sees sanitized original filename metadata. The anonymous form warns users to avoid identifying themselves inside evidence; the application does not redact file contents.
+
+### Notifications, dashboard counts and security
+
+Existing in-app COMPLAINT notifications use neutral messages without complaint text, sender identity or resolution details. Submission notifies the initial handler; acknowledgement/progress/resolution notify the author; escalation request notifies the current handler; actual escalation notifies the author and new handler. Closing creates its event without an extra notification. Excluded targets are never notified. State/history persistence is primary; secondary notification failures return delivered/attempted counts without rolling back the case. Losing conditional transitions do not notify.
+
+Dashboard metrics use the same visibility scope as inboxes: Student total/open/resolved, Faculty visible assigned/pending issues, HOD visible department/pending/request counts, Principal visible assigned/urgent/escalated counts. Open excludes RESOLVED/CLOSED; resolved counts the current RESOLVED state. Prior-handler totals may include readable history. No rankings, trends, queues or institution-wide complaint counts were added. Compound author/current-handler/prior-handler date indexes support scoped reads. Lists use aggregation/count facets and one bounded Named identity query rather than per-item population.
+
+All routes reuse protect/RBAC/CSRF, first-login, inactive-account, token-version revocation, pagination and error infrastructure. Unauthorized valid complaint/evidence IDs return safe unavailable responses. Explicit field allowlists reject client Student/Department/handler/status/priority/routing injection on creation. A per-account shared submission/escalation-request limiter allows 30 requests per 15 minutes. Normal JSON/URL-encoded limits remain 16 KB, scoped Feedback Session JSON remains 2 MB; multipart limits are complaint-only. The shared API client preserves cookie/CSRF behavior while letting the browser set the FormData boundary.
+
+| Endpoint | Authorized use |
+| --- | --- |
+| `GET /api/complaints/options` | Student options/rules; page/limit |
+| `POST /api/complaints` | Student multipart creation, optional `attachments` |
+| `GET /api/complaints/mine` | Student own paginated/filterable history |
+| `GET /api/complaints/inbox` | Explicit Faculty/HOD/Principal grants only |
+| `GET /api/complaints/:id` | Author/current/prior handler detail |
+| `GET /api/complaints/:id/attachments/:attachmentId` | Same authorization plus evidence membership |
+| `POST /api/complaints/:id/acknowledge` | Current handler, Submitted/Escalated |
+| `POST /api/complaints/:id/start` | Current handler, Acknowledged |
+| `POST /api/complaints/:id/escalation-request` | Author, eligible unresolved case; `reason` |
+| `POST /api/complaints/:id/escalate` | Current Faculty/HOD, unresolved |
+| `POST /api/complaints/:id/resolve` | Current handler, In Progress; `resolutionSummary` |
+| `POST /api/complaints/:id/close` | Author, Resolved |
+| `PATCH /api/complaints/:id/priority` | Current handler, upward-only `priority` |
+
+Backend upload tests require and generate a unique `test-results/complaint-uploads-<uuid>` directory; the browser suite uses an isolated directory under its artifacts. Both remove test evidence/directories after completion, including failure paths, and never use development uploads. Database tests retain the existing guarded unique `campusvoice_test_*` databases. Full validation commands remain `check:backend`, `test:backend`, `test:frontend`, `build:frontend` and `test:browser`, with syntax/whitespace checks and development fingerprints. No DSA structures, advanced analytics, AI, email/SMS, Phase 9 or Phase 10 were started.

@@ -1,0 +1,9 @@
+const TYPES = Object.freeze({ FACULTY_ISSUE: "FACULTY_ISSUE", AGAINST_FACULTY: "AGAINST_FACULTY", DEPARTMENT_ISSUE: "DEPARTMENT_ISSUE", AGAINST_HOD: "AGAINST_HOD", COLLEGE_CAMPUS: "COLLEGE_CAMPUS", SAFETY_URGENT: "SAFETY_URGENT" });
+const ROUTING = Object.freeze({ FACULTY_ISSUE: "FACULTY", AGAINST_FACULTY: "HOD", DEPARTMENT_ISSUE: "HOD", AGAINST_HOD: "PRINCIPAL", COLLEGE_CAMPUS: "PRINCIPAL", SAFETY_URGENT: "PRINCIPAL" });
+const NEXT_ROLE = Object.freeze({ FACULTY: "HOD", HOD: "PRINCIPAL" });
+const STATUSES = Object.freeze(["SUBMITTED", "ACKNOWLEDGED", "IN_PROGRESS", "ESCALATED", "RESOLVED", "CLOSED"]);
+const EVENTS = Object.freeze(["SUBMITTED", "ACKNOWLEDGED", "IN_PROGRESS", "ESCALATION_REQUESTED", "ESCALATED", "PRIORITY_CHANGED", "RESOLVED", "CLOSED"]);
+const PRIORITIES = Object.freeze(["NORMAL", "HIGH", "URGENT"]);
+const TRANSITIONS = Object.freeze({ acknowledge: { from: ["SUBMITTED", "ESCALATED"], to: "ACKNOWLEDGED" }, start: { from: ["ACKNOWLEDGED"], to: "IN_PROGRESS" }, resolve: { from: ["IN_PROGRESS"], to: "RESOLVED" }, close: { from: ["RESOLVED"], to: "CLOSED" } });
+const FILES = Object.freeze({ maxCount: 3, maxSize: 5 * 1024 * 1024, types: { ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png" } });
+module.exports = { TYPES, ROUTING, NEXT_ROLE, STATUSES, EVENTS, PRIORITIES, TRANSITIONS, FILES };

@@ -3,6 +3,7 @@ const navigation = (role, items) => [
   { label: "Dashboard", icon: "bi-speedometer2", path: `/${role}/dashboard` },
   ...items.map(([label, icon]) => ["Profile", "Notifications"].includes(label)
     ? { label, icon, path: label === "Profile" ? "/profile" : "/notifications" }
+    : ["Complaints", "Issues", "My Complaints", "Raise Complaint"].includes(label) ? { label, icon, path: `/${role}/complaints${label === "Raise Complaint" ? "/new" : ""}` }
     : academicPaths[role]?.[label] ? { label, icon, path: academicPaths[role][label] } : { label, icon, disabled: true }),
   { label: "Change password", icon: "bi-key", path: "/change-password" },
   { label: "Logout", icon: "bi-box-arrow-right", action: "logout" },

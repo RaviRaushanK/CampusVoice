@@ -16,6 +16,7 @@ process.env.COOKIE_SAME_SITE = "lax";
 process.env.TRUST_PROXY_HOPS = "0";
 
 const artifacts = resolve(__dirname, "../../test-results/browser");
+process.env.COMPLAINT_UPLOAD_DIR = resolve(artifacts, `complaint-uploads-${require("node:crypto").randomUUID()}`);
 const roles = ["PRINCIPAL", "HOD", "FACULTY", "STUDENT"];
 const temporaryPassword = `Temporary_${randomBytes(12).toString("hex")}!`;
 const newPassword = `Changed_${randomBytes(12).toString("hex")}!`;
@@ -109,6 +110,7 @@ const run = async () => {
     page.on("pageerror", error => errors.push(error.message));
     page.on("console", message => {
       if (page.expectPhase7ModerationRejection && message.location().url === `${apiOrigin}/api/general-feedback` && message.text().includes("400 (Bad Request)")) return;
+      if (page.expectPhase8ModerationRejection && message.location().url === `${apiOrigin}/api/complaints` && message.text().includes("400 (Bad Request)")) return;
       if (message.type() === "error" && !message.text().includes("401 (Unauthorized)")) errors.push(message.text());
     });
     await page.goto(`${frontendOrigin}/notifications`);
@@ -128,7 +130,16 @@ const run = async () => {
     await page.getByRole("button", { name: "Update password", exact: true }).click();
     await waitForDashboard(page, "PRINCIPAL");
 
-    if ([1440, 320].includes(width)) await runAcademicWorkflow({ page, frontendOrigin, apiOrigin, width, principalPassword: newPassword, temporaryPassword, checkLayout, artifacts });
+    if ([1440, 320].includes(width)) {
+      await runAcademicWorkflow({ page, frontendOrigin, apiOrigin, width, principalPassword: newPassword, temporaryPassword, checkLayout, artifacts });
+      // Complaint routing/notification assertions finish before restoring the
+      // independent notification regression's original 21-notice fixtures.
+      database.assertConnection(mongoose.connection);
+      const baseUsers = await User.find({ userCode: { $in: roles.map(role => `browser.${role.toLowerCase()}`) } }).select("_id").lean();
+      await Notification.deleteMany({ recipient: { $in: baseUsers.map(user => user._id) }, type: "COMPLAINT" });
+      await page.reload();
+      await waitForDashboard(page, "PRINCIPAL");
+    }
 
     for (const role of roles) {
       if (role !== "PRINCIPAL") { await login(page, `browser.${role.toLowerCase()}`); await waitForDashboard(page, role); }
@@ -251,5 +262,10 @@ run().catch(error => { console.error(error); process.exitCode = 1; }).finally(as
   if (vite) await vite.close();
   if (apiServer) await new Promise(resolveClose => apiServer.close(resolveClose));
   try { if (mongoose.connection.readyState !== 0) await database.drop(mongoose.connection); }
-  finally { await mongoose.disconnect(); }
+  finally {
+    await mongoose.disconnect();
+    const fs = require("node:fs/promises");
+    try { for (const file of await fs.readdir(process.env.COMPLAINT_UPLOAD_DIR)) await fs.unlink(resolve(process.env.COMPLAINT_UPLOAD_DIR, file)); await fs.rmdir(process.env.COMPLAINT_UPLOAD_DIR); }
+    catch (err) { if (err.code !== "ENOENT") throw err; }
+  }
 });

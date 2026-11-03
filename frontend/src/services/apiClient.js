@@ -4,7 +4,7 @@ export const request = async (path, options = {}) => {
   const method = (options.method || "GET").toUpperCase();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...fetchOptions, credentials: "include",
-    headers: { "Content-Type": "application/json", ...(!["GET", "HEAD"].includes(method) ? { "X-CSRF-Protection": "1" } : {}), ...options.headers },
+    headers: { ...(!(fetchOptions.body instanceof FormData) ? { "Content-Type": "application/json" } : {}), ...(!["GET", "HEAD"].includes(method) ? { "X-CSRF-Protection": "1" } : {}), ...options.headers },
   });
   const data = await response.json().catch(() => ({}));
   if (fetchOptions.signal?.aborted) throw new DOMException("Request aborted", "AbortError");

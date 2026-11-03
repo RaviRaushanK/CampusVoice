@@ -267,8 +267,8 @@ describe("Security and dashboards", () => {
   test("real dashboard counts are scoped and Student gets only own academic information", async () => {
     await account("FACULTY"); const student = await account("STUDENT", departmentA, { semester: 2, section: "A", batch: "2025-2027" });
     await account("STUDENT", departmentB); await subject(); await group();
-    expect((await call("get", "academic/dashboard", principal)).body.data.metrics).toEqual({ Departments: 2, "Active HODs": 2, Faculty: 1, Students: 2 });
-    expect((await call("get", "academic/dashboard", hodA)).body.data.metrics).toEqual({ Faculty: 1, Students: 1, Subjects: 1, "Class Groups": 1, "Active Assignments": 0 });
+    expect((await call("get", "academic/dashboard", principal)).body.data.metrics).toEqual({ Departments: 2, "Active HODs": 2, Faculty: 1, Students: 2, "Assigned Complaints": 0, "Urgent Complaints": 0, "Escalated Complaints": 0 });
+    expect((await call("get", "academic/dashboard", hodA)).body.data.metrics).toEqual({ Faculty: 1, Students: 1, Subjects: 1, "Class Groups": 1, "Active Assignments": 0, "Department Complaints": 0, "Pending Complaints": 0, "Escalation Requests": 0 });
     expect((await call("get", "academic/dashboard", student)).body.data).toMatchObject({ department: { code: "MCA" }, semester: 2, section: "A", batch: "2025-2027" });
     expect((await call("get", "students", student)).status).toBe(403);
   });
