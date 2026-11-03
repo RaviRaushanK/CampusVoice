@@ -1,4 +1,4 @@
-const academicPaths = { principal: { Departments: "/departments", HODs: "/hods" }, hod: { Faculty: "/faculty", Students: "/students", Subjects: "/subjects", Classes: "/classes", "Faculty Assignments": "/faculty-assignments" }, faculty: { "My Assignments": "/my-assignments", "My Sessions": "/my-sessions" } };
+const academicPaths = { principal: { Departments: "/departments", HODs: "/hods" }, hod: { Faculty: "/faculty", Students: "/students", Subjects: "/subjects", Classes: "/classes", "Faculty Assignments": "/faculty-assignments" }, faculty: { "My Assignments": "/my-assignments", "My Sessions": "/my-sessions" }, student: { "Feedback Sessions": "/feedback-sessions" } };
 const navigation = (role, items) => [
   { label: "Dashboard", icon: "bi-speedometer2", path: `/${role}/dashboard` },
   ...items.map(([label, icon]) => ["Profile", "Notifications"].includes(label)

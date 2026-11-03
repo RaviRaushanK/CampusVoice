@@ -49,7 +49,7 @@ const SessionEditor = () => {
     finally { busy.current = false; setSaving(false); }
   };
   return <div className="session-editor">
-    <PageHeader title={sessionId ? "Edit Feedback Draft" : "Create Feedback Session"} description="Configure a draft. Publishing and student participation will be available in a later phase." />
+    <PageHeader title={sessionId ? "Edit Feedback Draft" : "Create Feedback Session"} description="Configure a draft, then publish it from My Sessions when it is ready." />
     <Link to="/my-sessions" className="btn btn-outline-secondary mb-3">Back to My Sessions</Link>
     {loading ? <LoadingSpinner label={sessionId ? "Loading draft" : "Loading assignments"} /> : loadError ? <><AlertMessage type="danger" message={loadError} /><button className="btn btn-outline-secondary" onClick={() => setAttempt(value => value + 1)}>Retry builder</button></> : session && session.status !== "DRAFT" ? <AlertMessage message="Only draft sessions can be edited." /> : !sessionId && !assignments.length ? <EmptyState title="You do not currently have an active teaching assignment." message="A feedback session can be created after an HOD assigns you to a subject and class." icon="bi-book" /> : <form aria-label="Feedback draft" onSubmit={save}>
       <AlertMessage type="danger" message={error} />

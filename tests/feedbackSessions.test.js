@@ -57,7 +57,8 @@ test("creates only an owned draft, derives references, returns safe academic con
   expect(new Set(result.questions.map(value => value.id)).size).toBe(4);
   const stored = await Session.findById(result.id);
   for (const key of ["departmentId", "subjectId", "classGroupId", "facultyId", "createdBy"]) expect(String(stored[key])).toBe(String(modelFields()[key]));
-  for (const key of ["passwordHash", "tokenVersion", "facultyId", "createdBy", "__v", "publishedAt", "closedAt"]) expect(result).not.toHaveProperty(key);
+  for (const key of ["passwordHash", "tokenVersion", "facultyId", "createdBy", "__v"]) expect(result).not.toHaveProperty(key);
+  expect(result.publishedAt).toBeNull(); expect(result.closedAt).toBeNull();
   expect(await Notification.countDocuments()).toBe(0);
 });
 test("rejects another faculty's assignment and inactive assignment", async () => {
@@ -177,7 +178,7 @@ test.each(["post", "patch", "delete"])("%s requires both CSRF header and allowed
 test("malformed IDs and oversized request produce controlled errors", async () => {
   for (const method of ["get", "patch", "delete"]) expect((await call(method, "/bad", faculty, method === "patch" ? { title: "Valid" } : undefined)).status).toBe(400);
   expect((await call("post", "", faculty, body({ facultyAssignmentId: "bad" }))).status).toBe(400);
-  const huge = await call("post", "", faculty, body({ description: "x".repeat(17000) }));
+  const huge = await call("post", "", faculty, body({ description: "x".repeat(2 * 1024 * 1024 + 1) }));
   expect(huge.status).toBe(413); expect(huge.body.message).toBe("Request body too large.");
 });
 

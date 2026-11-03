@@ -19,6 +19,8 @@ const schema = new mongoose.Schema({
   allowAnonymous: { type: Boolean, default: true }, opensAt: { type: Date, default: null }, closesAt: { type: Date, default: null },
   status: { type: String, enum: Object.values(SESSION_STATUSES), default: SESSION_STATUSES.DRAFT },
   publishedAt: { type: Date, default: null }, closedAt: { type: Date, default: null },
+  // Freeze the real class criteria at publication, including optional batch.
+  audience: { type: new mongoose.Schema({ semester: { type: Number, enum: [1, 2, 3, 4], required: true }, section: { type: String, default: "" }, batch: { type: String, default: null }, academicYear: { type: String, required: true } }, { _id: false }), default: undefined },
 }, { timestamps: true, optimisticConcurrency: true });
 schema.pre("validate", function (next) {
   try {
@@ -32,4 +34,5 @@ schema.pre("validate", function (next) {
 // Array position is the canonical question order; subdocument IDs survive moves.
 schema.index({ facultyId: 1, createdAt: -1, _id: -1 });
 schema.index({ facultyId: 1, status: 1, createdAt: -1, _id: -1 });
+schema.index({ departmentId: 1, "audience.semester": 1, "audience.section": 1, status: 1, createdAt: -1, _id: -1 });
 module.exports = mongoose.model("FeedbackSession", schema);

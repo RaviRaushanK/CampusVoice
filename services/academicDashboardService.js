@@ -22,6 +22,7 @@ const getDashboard = async user => {
     const [myAssignments, total, drafts] = await Promise.all([assignments.list(user, { page: 1, limit: 5, status: "active" }), FeedbackSession.countDocuments({ facultyId: user._id }), FeedbackSession.countDocuments({ facultyId: user._id, status: "DRAFT" })]);
     return { department: safeDepartment(department), assignments: myAssignments, metrics: { "My Sessions": total, "Draft Sessions": drafts } };
   }
-  return { department: safeDepartment(department), semester: user.semester ?? null, section: user.section ?? null, batch: user.batch ?? null };
+  return { department: safeDepartment(department), semester: user.semester ?? null, section: user.section ?? null, batch: user.batch ?? null,
+    metrics: await require("./studentFeedbackService").counts(user) };
 };
 module.exports = { getDashboard };

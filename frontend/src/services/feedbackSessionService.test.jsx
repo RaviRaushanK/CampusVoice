@@ -9,4 +9,9 @@ it("uses the shared cookie/CSRF API client for all session operations", () => {
   service.createSession({ title: "Draft" }); expect(request).toHaveBeenLastCalledWith("/feedback-sessions", { method: "POST", body: '{"title":"Draft"}' });
   service.updateSession("id", { questions: [] }); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id", { method: "PATCH", body: '{"questions":[]}' });
   service.deleteDraft("id"); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id", { method: "DELETE" });
+  service.publishSession("id"); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/publish", { method: "POST" });
+  service.closeSession("id"); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/close", { method: "POST" });
+  service.getStudentSessions(); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/student?page=1&limit=20&category=pending", {});
+  service.getStudentSession("id"); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/respond", {});
+  service.submitSessionResponse("id", { identityMode: "NAMED", answers: [] }); expect(request).toHaveBeenLastCalledWith("/feedback-sessions/id/responses", { method: "POST", body: '{"identityMode":"NAMED","answers":[]}' });
 });

@@ -422,6 +422,10 @@ a {
 .option-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .option-controls input { flex: 1 1 12rem; width: 0; }
 .session-editor .btn, .sessions-page .btn { white-space: normal; }
+.student-questionnaire fieldset { min-width: 0; }
+.student-questionnaire legend, .answer-option span { overflow-wrap: anywhere; }
+.answer-option { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.75rem; min-width: 0; }
+.answer-option input { flex-shrink: 0; }
 
 .auth-panel {
   width: 100%;

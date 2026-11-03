@@ -5,3 +5,8 @@ export const getSession = (id, options = {}) => request(`${path}/${encodeURIComp
 export const createSession = fields => request(path, { method: "POST", body: JSON.stringify(fields) });
 export const updateSession = (id, fields) => request(`${path}/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(fields) });
 export const deleteDraft = id => request(`${path}/${encodeURIComponent(id)}`, { method: "DELETE" });
+export const publishSession = id => request(`${path}/${encodeURIComponent(id)}/publish`, { method: "POST" });
+export const closeSession = id => request(`${path}/${encodeURIComponent(id)}/close`, { method: "POST" });
+export const getStudentSessions = (query = {}, options = {}) => request(`${path}/student?${new URLSearchParams({ page: 1, limit: 20, category: "pending", ...query })}`, options);
+export const getStudentSession = (id, options = {}) => request(`${path}/${encodeURIComponent(id)}/respond`, options);
+export const submitSessionResponse = (id, fields) => request(`${path}/${encodeURIComponent(id)}/responses`, { method: "POST", body: JSON.stringify(fields) });

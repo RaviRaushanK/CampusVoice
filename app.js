@@ -23,6 +23,9 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
+// Fifty maximum-size questions can serialize above 1 MB when JSON escaping is
+// required. Keep this finite allowance confined to the feedback resource.
+app.use("/api/feedback-sessions", express.json({ limit: "2mb" }));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());

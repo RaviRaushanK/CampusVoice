@@ -61,5 +61,6 @@ const runFeedbackWorkflow = async ({ page, frontendOrigin, apiOrigin, width, che
   await page.goto(`${frontendOrigin}/faculty/dashboard`);
   await page.getByText("Draft Sessions", { exact: true }).waitFor(); await checkLayout(page);
   console.log(`PASS: Faculty draft create/all question types/options/preview/reorder/stable IDs/edit/remove and dashboard at ${width}px`);
+  return saved;
 };
 module.exports = { runFeedbackWorkflow };

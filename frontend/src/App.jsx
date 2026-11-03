@@ -10,6 +10,8 @@ import FacultyDashboard from "./pages/faculty/FacultyDashboard";
 import MySessions from "./pages/faculty/MySessions";
 import SessionEditor from "./pages/faculty/SessionEditor";
 import StudentDashboard from "./pages/student/StudentDashboard";
+import FeedbackSessions from "./pages/student/FeedbackSessions";
+import SessionQuestionnaire from "./pages/student/SessionQuestionnaire";
 import Login from "./pages/auth/Login";
 import ChangePassword from "./pages/auth/ChangePassword";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -53,6 +55,10 @@ const App = () => {
           <Route path="/my-sessions" element={<MySessions />} />
           <Route path="/my-sessions/new" element={<SessionEditor />} />
           <Route path="/my-sessions/:sessionId/edit" element={<SessionEditor />} />
+        </Route>
+        <Route element={<ProtectedRoute expectedRole="STUDENT"><SharedRoleLayout /></ProtectedRoute>}>
+          <Route path="/feedback-sessions" element={<FeedbackSessions />} />
+          <Route path="/feedback-sessions/:sessionId/respond" element={<SessionQuestionnaire />} />
         </Route>
 
         <Route

@@ -6,7 +6,7 @@ import * as service from "../../services/feedbackSessionService";
 import * as academic from "../../services/academicService";
 import * as auth from "../../services/authService";
 import * as notifications from "../../services/notificationService";
-vi.mock("../../services/feedbackSessionService", () => ({ getMySessions: vi.fn(), getSession: vi.fn(), createSession: vi.fn(), updateSession: vi.fn(), deleteDraft: vi.fn() }));
+vi.mock("../../services/feedbackSessionService", () => ({ getMySessions: vi.fn(), getSession: vi.fn(), createSession: vi.fn(), updateSession: vi.fn(), deleteDraft: vi.fn(), publishSession: vi.fn(), closeSession: vi.fn() }));
 vi.mock("../../services/academicService", () => ({ listAcademic: vi.fn(), getAcademicDashboard: vi.fn() }));
 vi.mock("../../services/authService", () => ({ me: vi.fn(), logout: vi.fn() }));
 vi.mock("../../services/notificationService", () => ({ getUnreadCount: vi.fn() }));
@@ -27,6 +27,7 @@ beforeEach(() => {
   academic.listAcademic.mockResolvedValue(result([assignment])); academic.getAcademicDashboard.mockResolvedValue({ data: { metrics: {} } });
   service.getMySessions.mockResolvedValue(result()); service.getSession.mockResolvedValue({ data: draft });
   service.createSession.mockResolvedValue({ data: draft }); service.updateSession.mockResolvedValue({ data: draft }); service.deleteDraft.mockResolvedValue({ data: { deleted: true } });
+  service.publishSession.mockResolvedValue({ data: { ...draft, status: "OPEN", availability: "OPEN", notificationDelivery: { sent: 1, failed: 0 } } }); service.closeSession.mockResolvedValue({ data: { ...draft, status: "CLOSED", availability: "CLOSED" } });
 });
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
 it("shows loading, empty state and Create Session navigation", async () => {
@@ -125,4 +126,26 @@ it.each(["PRINCIPAL", "HOD", "STUDENT"])("blocks %s at the Faculty builder route
 });
 it("first-login guard prevents session loading", async () => {
   open("/my-sessions", "FACULTY", { mustChangePassword: true }); await screen.findByText("First login - change your password"); expect(service.getMySessions).not.toHaveBeenCalled();
+});
+it("confirms publication, refreshes authoritative state and freezes editing", async () => {
+  service.getMySessions.mockResolvedValueOnce(result([draft])).mockResolvedValue(result([{ ...draft, status: "OPEN", availability: "OPEN" }])); open();
+  fireEvent.click(await screen.findByRole("button", { name: "Publish Session" })); expect(service.publishSession).not.toHaveBeenCalled();
+  expect(screen.getByRole("alertdialog").textContent).toContain("cannot be edited"); fireEvent.click(screen.getByRole("button", { name: "Confirm Publish" }));
+  await screen.findByText("Session published. Eligible students have been notified."); await screen.findByRole("button", { name: "Close Session" }); expect(screen.queryByRole("link", { name: "Edit Draft" })).toBeNull();
+});
+it("retains confirmation on publish failure, prevents duplicate actions and reports notification failure", async () => {
+  let reject; service.publishSession.mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; })); service.getMySessions.mockResolvedValue(result([draft])); open();
+  fireEvent.click(await screen.findByRole("button", { name: "Publish Session" })); fireEvent.click(screen.getByRole("button", { name: "Confirm Publish" })); fireEvent.click(screen.getByRole("button", { name: "Processing..." })); expect(service.publishSession).toHaveBeenCalledOnce();
+  await act(async () => reject(new Error("Add at least one question before publishing."))); await screen.findByText("Add at least one question before publishing.");
+  service.publishSession.mockResolvedValueOnce({ data: { notificationDelivery: { failed: 1, sent: 0 } } }); fireEvent.click(screen.getByRole("button", { name: "Confirm Publish" })); await screen.findByText(/Some notifications could not be delivered/);
+});
+it.each(["OPEN", "SCHEDULED"])("confirms close from effective %s and removes actions after closure", async availability => {
+  service.getMySessions.mockResolvedValueOnce(result([{ ...draft, status: "OPEN", availability }])).mockResolvedValue(result([{ ...draft, status: "CLOSED", availability: "CLOSED" }])); open();
+  fireEvent.click(await screen.findByRole("button", { name: "Close Session" })); expect(service.closeSession).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "Cancel action" })); fireEvent.click(screen.getByRole("button", { name: "Close Session" })); fireEvent.click(screen.getByRole("button", { name: "Confirm Close" }));
+  await screen.findByText("Session closed."); await waitFor(() => expect(screen.queryByRole("button", { name: "Close Session" })).toBeNull()); expect(screen.queryByRole("link", { name: "Edit Draft" })).toBeNull();
+});
+it("effective expiry hides close and edit actions even with stored OPEN", async () => {
+  service.getMySessions.mockResolvedValue(result([{ ...draft, status: "OPEN", availability: "CLOSED" }])); open();
+  const card = await screen.findByRole("article"); expect(within(card).getByText("CLOSED")).toBeTruthy(); expect(within(card).queryByRole("button")).toBeNull(); expect(within(card).queryByRole("link")).toBeNull();
 });

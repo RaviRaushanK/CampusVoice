@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const { resolve } = require("node:path");
 const { runFeedbackWorkflow } = require("./feedbackWorkflow");
+const { runResponseWorkflow } = require("./responseWorkflow");
 
 const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, principalPassword, temporaryPassword, checkLayout, artifacts }) => {
   const navigate = async (path, heading) => {
@@ -18,7 +19,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
     await checkLayout(page);
     return data;
   };
-  const addAccount = async ({ path, heading, type, name, code, email, departmentId }) => {
+  const addAccount = async ({ path, heading, type, name, code, email, departmentId, studentSection = "a" }) => {
     await navigate(path, heading); await page.getByRole("button", { name: `Add ${type}`, exact: true }).click();
     await page.getByLabel("Name", { exact: true }).fill(name);
     await page.getByLabel("Email", { exact: true }).fill(email);
@@ -30,7 +31,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
     }
     if (type === "Student") {
       await page.getByLabel("Semester", { exact: true }).selectOption("2");
-      await page.getByLabel("Section", { exact: true }).fill("a");
+      await page.getByLabel("Section", { exact: true }).fill(studentSection);
       await page.getByLabel("Admission batch", { exact: true }).fill("2025-2027");
     }
     await checkLayout(page);
@@ -68,6 +69,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await page.getByText(`Department: ${department.code} — ${department.name}`, { exact: true }).waitFor();
   const faculty = await addAccount({ path: "/faculty", heading: "Faculty Management", type: "Faculty", name: `Academic Faculty ${width}`, code: `academic.faculty.${width}`, email: `faculty.${width}@test.example` });
   const student = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Academic Student ${width}`, code: `1MV25MC${width}`, email: `student.${width}@test.example` });
+  const wrongStudent = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Other Section Student ${width}`, code: `other.student.${width}`, email: `other.student.${width}@test.example`, studentSection: "B" });
   await page.getByLabel("Search", { exact: true }).fill(student.userCode);
   await page.getByLabel("Semester filter", { exact: true }).selectOption("2");
   await page.getByLabel("Section filter", { exact: true }).fill("A");
@@ -101,8 +103,8 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await page.getByRole("cell", { name: `${subject.code} — ${subject.name}`, exact: true }).waitFor();
   assert.equal(await page.getByRole("button", { name: "Edit", exact: true }).count(), 0);
   await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `academic-my-assignments-${width}.png`), fullPage: true });
-  await runFeedbackWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts });
-  await logout(); await login(student.userCode, temporaryPassword, "STUDENT", true);
+  const feedback = await runFeedbackWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts });
+  await runResponseWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts, sessionId: feedback.id, student, wrongStudent, faculty, temporaryPassword, login, logout });
   await page.getByText("Semester: 2", { exact: true }).waitFor();
   await page.getByText("Admission batch: 2025-2027", { exact: true }).waitFor(); await checkLayout(page);
   await logout(); await login("browser.principal", principalPassword, "PRINCIPAL");

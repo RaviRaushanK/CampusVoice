@@ -3,7 +3,17 @@ const { protect } = require("../middleware/authMiddleware");
 const { requireRole } = require("../middleware/roleMiddleware");
 const controller = require("../controllers/feedbackSessionController");
 router.use((req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
-router.use(protect, requireRole("FACULTY"));
+router.use(protect);
+router.get("/student", requireRole("STUDENT"), controller.studentList);
+router.get("/:sessionId/respond", requireRole("STUDENT"), controller.studentGet);
+router.post("/:sessionId/responses", requireRole("STUDENT"), controller.submit);
+router.use(requireRole("FACULTY"));
+const emptyAction = (req, res, next) => {
+  if (req.body !== undefined && (!req.body || typeof req.body !== "object" || Array.isArray(req.body) || Object.keys(req.body).length)) return next(require("../utils/authError")(400, "Lifecycle actions accept no body fields."));
+  next();
+};
+router.post("/:sessionId/publish", emptyAction, controller.publish);
+router.post("/:sessionId/close", emptyAction, controller.close);
 router.get("/mine", controller.list);
 router.get("/:sessionId", controller.get);
 router.post("/", controller.create);
