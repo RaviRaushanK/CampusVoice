@@ -5,7 +5,7 @@ const AlertMessage = ({ type = "info", message }) => {
 
   return (
     <div className={`alert alert-${type} d-flex align-items-start gap-2`} role="alert">
-      <i className="bi bi-info-circle mt-1" aria-hidden="true"></i>
+      <i className={`bi ${{ success: "bi-check-circle", danger: "bi-exclamation-circle", warning: "bi-exclamation-triangle" }[type] || "bi-info-circle"} mt-1`} aria-hidden="true"></i>
       <span>{message}</span>
     </div>
   );

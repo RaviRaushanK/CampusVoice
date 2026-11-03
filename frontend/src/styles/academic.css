@@ -1,0 +1,13 @@
+.academic-page, .academic-page .panel, .academic-page td { min-width: 0; overflow-wrap: anywhere; }
+.academic-page select { min-width: 0; max-width: 100%; }
+.academic-page .cv-filter-bar { margin-bottom: 1.25rem; }
+.academic-table-container { max-width: 100%; }
+.academic-table { min-width: 700px; }
+.academic-table td { max-width: 250px; }
+.academic-table td[data-label="Code"], .academic-table td[data-label="User code"], .academic-table td[data-label="USN"] { white-space: nowrap; min-width: 105px; }
+.academic-table td[data-label="Name"] { min-width: 150px; }
+.academic-table td[data-label="Email"] { min-width: 190px; }
+.academic-page section[aria-label^="Add"], .academic-page section[aria-label^="Edit"] { margin-bottom: 1.5rem; border-top: 3px solid var(--cv-primary); }
+.academic-page section[aria-label^="Add"] > h3, .academic-page section[aria-label^="Edit"] > h3 { margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--cv-border); }
+.academic-page form fieldset > .d-flex:last-child { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--cv-border); }
+@media (max-width: 575.98px) { .academic-page .cv-filter-bar { padding: .6rem .75rem; } .academic-table th, .academic-table td { padding: .8rem; } }

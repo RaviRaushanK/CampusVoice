@@ -1,3 +1,6 @@
+import RatingChoice from "../../components/common/RatingChoice";
+import IdentityChoice from "../../components/common/IdentityChoice";
+import "../../styles/feedback.css";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import * as service from "../../services/feedbackSessionService";
@@ -51,10 +54,10 @@ const Questionnaire = () => {
       <AlertMessage type="danger" message={error} />
       {session.questions.some(question => question.type === "SHORT_ANSWER") && <p className="text-muted">Please use respectful and appropriate language.</p>}
       <form aria-label="Student feedback" onSubmit={prepare} noValidate><fieldset disabled={saving || locked || confirmation}>
-        <fieldset className="panel mb-3"><legend className="h5">Your identity</legend>{session.allowAnonymous ? <><p>If you stay anonymous, your identity will not be shown to the Faculty member. Your choice cannot change after submission.</p>{[["ANONYMOUS", "Stay Anonymous"], ["NAMED", "Reveal Identity"]].map(([value, label]) => <label key={value} className="d-flex gap-2 mb-2"><input type="radio" name="identity" checked={mode === value} onChange={() => setMode(value)} />{label}</label>)}</> : <p>This session uses named responses.</p>}</fieldset>
+        <fieldset className="panel mb-3"><legend className="h5">Your identity</legend>{session.allowAnonymous ? <><p>If you stay anonymous, your identity will not be shown to the Faculty member. Your choice cannot change after submission.</p><IdentityChoice name="identity" value={mode} onChange={setMode} /></> : <p>This session uses named responses.</p>}</fieldset>
         {session.questions.map((question, index) => <fieldset key={question.id} className="panel mb-3"><legend className="h6">{index + 1}. {question.prompt} ({question.required ? "Required" : "Optional"})</legend>
           {["SINGLE_CHOICE", "MULTI_SELECT"].includes(question.type) && question.options.map((option, position) => <label className="answer-option" key={position}><input type={question.type === "SINGLE_CHOICE" ? "radio" : "checkbox"} name={`question-${question.id}`} checked={question.type === "SINGLE_CHOICE" ? values[question.id] === option : (values[question.id] || []).includes(option)} onChange={event => question.type === "SINGLE_CHOICE" ? set(question.id, option) : set(question.id, event.target.checked ? [...(values[question.id] || []), option] : (values[question.id] || []).filter(value => value !== option))} /><span>{option}</span></label>)}
-          {question.type === "RATING" && <div className="d-flex flex-wrap gap-3">{[1, 2, 3, 4, 5].map(value => <label className="answer-option" key={value}><input type="radio" name={`question-${question.id}`} checked={values[question.id] === value} onChange={() => set(question.id, value)} /><span>{value}</span></label>)}</div>}
+          {question.type === "RATING" && <RatingChoice name={`question-${question.id}`} value={values[question.id]} onChange={value => set(question.id, value)} />}
           {question.type === "SHORT_ANSWER" && <><label className="form-label" htmlFor={`answer-${question.id}`}>Answer question {index + 1}</label><textarea className="form-control" id={`answer-${question.id}`} rows={4} maxLength={1000} value={values[question.id] || ""} onChange={event => set(question.id, event.target.value)} /><p className="text-muted">{(values[question.id] || "").length}/1000 characters</p></>}
         </fieldset>)}
         <button className="btn btn-primary" type="submit">Submit Feedback</button>

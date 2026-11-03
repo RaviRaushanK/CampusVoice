@@ -1,0 +1,45 @@
+/* Brief, one-time entrances; content remains visible without animation support. */
+@keyframes cv-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cv-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page-header, .auth-panel {
+    animation: cv-enter 240ms ease-out;
+  }
+
+  .main-content .panel, .main-content .stat-card,
+  .main-content .empty-state, [role="dialog"], [role="alertdialog"] {
+    animation: cv-enter 200ms ease-out;
+  }
+
+  .alert, .sidebar-backdrop {
+    animation: cv-fade 160ms ease-out;
+  }
+
+  .btn {
+    transition: background-color 160ms ease, border-color 160ms ease,
+      color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  }
+
+  .stat-card, .dashboard-shortcut {
+    transition: border-color 180ms ease, background-color 180ms ease,
+      box-shadow 180ms ease, transform 180ms ease;
+  }
+
+  .sidebar-link > .bi { transition: transform 160ms ease; }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn:not(:disabled):not(.disabled):hover { transform: translateY(-1px); }
+    .stat-card:hover, .dashboard-shortcut:hover { transform: translateY(-2px); }
+    .sidebar-link:hover > .bi { transform: translateX(2px); }
+  }
+
+  .btn:not(:disabled):not(.disabled):active { transform: translateY(0); }
+}

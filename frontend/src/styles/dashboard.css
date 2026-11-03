@@ -1,0 +1,17 @@
+.academic-dashboard { min-width: 0; overflow-wrap: anywhere; }
+.dashboard-welcome { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.5rem; padding: 1.5rem; background: #edf2fc; border: 1px solid #dbe4f7; border-radius: var(--cv-radius-md); }
+.dashboard-welcome h3 { font-size: 1.3rem; margin: 0 0 .5rem; font-weight: 650; }
+.dashboard-welcome p { margin: 0; font-size: .84rem; color: #566b90; max-width: 600px; }
+.dashboard-welcome-icon { display: grid; place-items: center; flex-shrink: 0; width: 62px; height: 62px; border: 1px solid #d2def6; border-radius: 50%; background: #f8faff; color: var(--cv-primary); font-size: 1.9rem; }
+.dashboard-shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; margin: 1.5rem 0; }
+.dashboard-shortcut { display: flex; align-items: center; gap: .8rem; padding: 1rem; border: 1px solid var(--cv-border); border-radius: var(--cv-radius-md); background: var(--cv-surface); color: var(--cv-heading); font-size: .8rem; font-weight: 600; text-decoration: none; transition: border-color var(--cv-transition), background var(--cv-transition); }
+.dashboard-shortcut:hover { border-color: #aebfe8; background: #f9fbff; }
+.dashboard-shortcut > .bi:first-child { color: var(--cv-primary); font-size: 1.1rem; }
+.dashboard-shortcut > .bi:last-child { margin-left: auto; color: var(--cv-text-muted); }
+.dashboard-guidance { display: flex; align-items: flex-start; gap: 1rem; margin-top: 1.5rem; }
+.dashboard-guidance > .bi { color: var(--cv-primary); font-size: 1.35rem; }
+.dashboard-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .65rem; margin: .25rem 0; }
+.academic-dashboard section[aria-label="My teaching assignments"] ul { padding-left: 1.1rem; }
+.academic-dashboard section[aria-label="My teaching assignments"] li { padding: .6rem 0; border-bottom: 1px solid var(--cv-border); font-size: .82rem; }
+@media (max-width: 767.98px) { .dashboard-shortcuts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 575.98px) { .dashboard-welcome { padding: 1.1rem; } .dashboard-welcome-icon { display: none; } .dashboard-welcome h3 { font-size: 1.15rem; } .dashboard-shortcuts { grid-template-columns: 1fr; } }

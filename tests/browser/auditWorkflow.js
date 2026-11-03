@@ -4,7 +4,7 @@ const runAuditWorkflow = async ({ page, frontendOrigin, apiOrigin, width, artifa
   const api = `${apiOrigin}/api/audit-logs`;
   const response = page.waitForResponse(res => res.url().startsWith(`${api}?`) && res.request().method() === "GET");
   await page.goto(`${frontendOrigin}/principal/audit-logs`); const result = await response; assert.equal(result.status(), 200, await result.text()); const data = (await result.json()).data; assert.ok(data.pagination.total > 20); assert.equal(data.items.length, 20);
-  await page.getByRole("heading", { name: "Audit Logs", exact: true }).waitFor(); await page.getByRole("article").first().waitFor(); await checkLayout(page);
+  await page.getByRole("heading", { name: "Audit Logs", exact: true }).waitFor(); await page.getByRole("table", { name: "Audit operations" }).getByRole("row").nth(1).waitFor(); await checkLayout(page);
   const safe = value => { const json = JSON.stringify(value); for (const secret of [student.id, student.name, student.userCode, student.email, "Private anonymous suggestion", "General anonymous feedback", "LongComplaintDescription", "LongStudentAnswer", "passwordHash", "tokenVersion", "actorId", "resourceId", "operationId", "COMPLAINT", "SUGGESTION"]) assert.equal(json.includes(secret), false, `Audit data leaked ${secret}`); };
   safe(data);
   const next = page.waitForResponse(res => res.url().startsWith(`${api}?`) && res.url().includes("page=2")); await page.getByRole("button", { name: "Next audit logs", exact: true }).click(); assert.equal((await next).status(), 200); await page.getByText(/^Page 2 of /).waitFor();

@@ -1,3 +1,4 @@
+import "../../styles/messages.css";
 import { useEffect, useId, useState } from "react";
 import LoadingSpinner from "../common/LoadingSpinner";
 import AlertMessage from "../common/AlertMessage";

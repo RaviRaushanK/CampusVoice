@@ -18,7 +18,9 @@ const schema = new mongoose.Schema({
   tokenVersion: { type: Number, default: 0, min: 0, select: false },
 }, { timestamps: true });
 // Missing, null and empty optional emails do not reserve an address.
-schema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $type: "string", $gt: "" } } });
+// Use a distinct name so legacy non-unique/sparse email_1 indexes can coexist.
+// Reusing email_1 makes User.init() fail and blocks all account provisioning.
+schema.index({ email: 1 }, { name: "unique_nonempty_user_email", unique: true, partialFilterExpression: { email: { $type: "string", $gt: "" } } });
 schema.index({ departmentId: 1, role: 1, name: 1 });
 schema.index({ departmentId: 1 }, { unique: true, name: "one_active_hod_per_department",
   partialFilterExpression: { role: "HOD", isActive: true, departmentId: { $type: "objectId" } } });

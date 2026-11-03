@@ -5,5 +5,5 @@ const STATUSES = Object.freeze(["SUBMITTED", "ACKNOWLEDGED", "IN_PROGRESS", "ESC
 const EVENTS = Object.freeze(["SUBMITTED", "ACKNOWLEDGED", "IN_PROGRESS", "ESCALATION_REQUESTED", "ESCALATED", "PRIORITY_CHANGED", "RESOLVED", "CLOSED"]);
 const PRIORITIES = Object.freeze(["NORMAL", "HIGH", "URGENT"]);
 const TRANSITIONS = Object.freeze({ acknowledge: { from: ["SUBMITTED", "ESCALATED"], to: "ACKNOWLEDGED" }, start: { from: ["ACKNOWLEDGED"], to: "IN_PROGRESS" }, resolve: { from: ["IN_PROGRESS"], to: "RESOLVED" }, close: { from: ["RESOLVED"], to: "CLOSED" } });
-const FILES = Object.freeze({ maxCount: 3, maxSize: 5 * 1024 * 1024, types: { ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png" } });
+const FILES = Object.freeze({ maxCount: 3, maxSize: 5 * 1024 * 1024, types: { ".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".mp4": "video/mp4", ".webm": "video/webm" } });
 module.exports = { TYPES, ROUTING, NEXT_ROLE, STATUSES, EVENTS, PRIORITIES, TRANSITIONS, FILES };

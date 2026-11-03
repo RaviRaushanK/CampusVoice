@@ -1,3 +1,4 @@
+import "../../styles/analytics.css";
 import { useEffect, useState } from "react";
 import { getAnalytics } from "../../services/analyticsService";
 import AlertMessage from "../common/AlertMessage";

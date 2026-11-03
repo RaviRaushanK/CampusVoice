@@ -117,6 +117,20 @@ test("failed DB create removes saved files; failed transition records no event o
   const item = await create("FACULTY_ISSUE"); const count = await Notification.countDocuments(); vi.spyOn(Complaint, "findOneAndUpdate").mockRejectedValueOnce(new Error("write failed")); expect((await action(item, "acknowledge", faculty)).status).toBe(500); expect((await Complaint.findById(item.id)).events).toHaveLength(1); expect(await Notification.countDocuments()).toBe(count);
 });
 test.each([[pdf, "evidence.pdf", "application/pdf"], [png, "evidence.png", "image/png"], [jpeg, "evidence.jpeg", "image/jpeg"]])("valid evidence %s %s accepted", async (bytes, name, mime) => { const res = await upload(body(), [{ bytes, name, mime }]); expect(res.status).toBe(201); expect(await diskFiles()).toHaveLength(1); });
+test("multiple images and a PDF persist together and each attachment can be downloaded", async () => {
+  const evidence = [{ bytes: png, name: "first.png", mime: "image/png" }, { bytes: jpeg, name: "second.jpg", mime: "image/jpeg" }, { bytes: pdf, name: "document.pdf", mime: "application/pdf" }];
+  const response = await upload(body(), evidence);
+  expect(response.status).toBe(201);
+  const item = response.body.data.item;
+  expect(item.attachments).toHaveLength(3);
+  expect(new Set(item.attachments.map(file => file.id)).size).toBe(3);
+  expect(await diskFiles()).toHaveLength(3);
+  for (const file of item.attachments) {
+    const download = await call("get", `/${item.id}/attachments/${file.id}`, student);
+    expect(download.status).toBe(200);
+    expect(download.headers["content-type"]).toContain(file.mimeType);
+  }
+});
 test.each([[pdf, "evidence.exe", "application/pdf"], [pdf, "evidence.pdf", "image/png"], [png, "evidence.pdf", "application/pdf"], [Buffer.from("<html>bad</html>"), "evidence.png", "image/png"], [Buffer.alloc(0), "empty.pdf", "application/pdf"], [Buffer.alloc(5242881, 1), "large.pdf", "application/pdf"]])("invalid attachment %s %s rejected without files", async (bytes, name, mime) => { expect((await upload(body(), [{ bytes, name, mime }])).status).toBe(400); expect(await diskFiles()).toEqual([]); expect(await Complaint.countDocuments()).toBe(0); });
 test("too many files, unexpected multipart fields and duplicate scalar fields reject with cleanup", async () => { expect((await upload(body(), Array.from({ length: 4 }, () => ({ bytes: pdf, name: "file.pdf", mime: "application/pdf" })))).status).toBe(400); expect((await upload({ ...body(), extra: "value" })).status).toBe(400); expect((await call("post", "").field("type", "DEPARTMENT_ISSUE").field("type", "COLLEGE_CAMPUS").field("title", "Valid title").field("description", "Long enough meaningful description.")).status).toBe(400); expect(await diskFiles()).toEqual([]); });
 test("path traversal filename is sanitized, stored under generated name, private directory inaccessible", async () => { const res = await upload(body(), [{ bytes: pdf, name: "../../PrivateStudent.pdf", mime: "application/pdf" }]); expect(res.status).toBe(201); expect((await diskFiles())[0]).toMatch(/^[a-f0-9-]{36}\.pdf$/); expect((await request(app).get(`/uploads/complaints/${(await diskFiles())[0]}`)).status).toBe(404); });
@@ -163,4 +177,27 @@ test("original complaint and events have no generic edit/delete/reveal API", asy
   for (const method of ["patch", "put", "delete"]) expect((await call(method, `/${item.id}`, student, { title: "Changed title", identityMode: "NAMED", events: [] })).status).toBe(404);
   expect((await call("post", `/${item.id}/reveal`, principal, {})).status).toBe(404);
   const stored = await Complaint.findById(item.id); expect(stored.title).toBe(item.title); expect(stored.identityMode).toBe("ANONYMOUS"); expect(stored.events).toHaveLength(1);
+});
+
+const mp4Video = Buffer.concat([Buffer.from([0, 0, 0, 24]), Buffer.from("ftypisom"), Buffer.alloc(4), Buffer.from("isommp42")]);
+const webmVideo = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3, 0x87, 0x42, 0x82, 0x84]), Buffer.from("webm")]);
+test.each([[mp4Video, "clip.mp4", "video/mp4"], [webmVideo, "clip.webm", "video/webm"]])("video evidence %s %s saves and downloads privately", async (bytes, name, mime) => {
+  const result = await upload(body(), [{ bytes, name, mime }]); expect(result.status).toBe(201);
+  const item = result.body.data.item, file = item.attachments[0]; expect(file.mimeType).toBe(mime);
+  const download = await call("get", `/${item.id}/attachments/${file.id}`, faculty);
+  expect(download.status).toBe(200); expect(download.headers["content-type"]).toContain(mime);
+  expect(download.headers["content-disposition"]).toContain(name.endsWith(".mp4") ? ".mp4" : ".webm");
+  expect((await call("get", `/${item.id}/attachments/${file.id}`, otherFaculty)).status).toBe(404);
+});
+test.each([
+  [Buffer.from("<html>not video</html>"), "clip.mp4", "video/mp4"],
+  [Buffer.from([0, 0, 0, 40, 102, 116, 121, 112]), "clip.mp4", "video/mp4"],
+  [Buffer.concat([Buffer.from([0,0,0,16]), Buffer.from("ftypavif"), Buffer.alloc(4)]), "clip.mp4", "video/mp4"],
+  [Buffer.concat([Buffer.from([0x1a,0x45,0xdf,0xa3,0x8b,0x42,0x82,0x88]), Buffer.from("matroska")]), "clip.webm", "video/webm"],
+  [Buffer.from([0x1a,0x45,0xdf,0xa3,0xff]), "clip.webm", "video/webm"],
+  [mp4Video, "clip.webm", "video/webm"],
+  [mp4Video, "clip.mp4", "application/pdf"],
+])("rejects disguised or malformed video %s %s without evidence leftovers", async (bytes, name, mime) => {
+  expect((await upload(body(), [{ bytes, name, mime }])).status).toBe(400);
+  expect(await diskFiles()).toEqual([]); expect(await Complaint.countDocuments()).toBe(0);
 });

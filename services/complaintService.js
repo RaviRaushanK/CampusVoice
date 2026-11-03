@@ -129,7 +129,7 @@ const attachment = async (user, identifier, attachmentId, query = {}) => {
   validator.emptyQuery(query); const value = await Complaint.findOne({ ...scope(user), _id: objectId(identifier) }).select("attachments").lean();
   const index = value?.attachments.findIndex(file => String(file._id) === String(validator.id(attachmentId))) ?? -1;
   if (index < 0) throw error(404, "Attachment unavailable.");
-  const file = value.attachments[index]; return { path: files.pathFor(file.storageName), mimeType: file.mimeType, filename: `Attachment-${index + 1}${file.mimeType === "application/pdf" ? ".pdf" : file.mimeType === "image/png" ? ".png" : ".jpg"}` };
+  const file = value.attachments[index]; return { path: files.pathFor(file.storageName), mimeType: file.mimeType, filename: `Attachment-${index + 1}${file.mimeType === "application/pdf" ? ".pdf" : file.mimeType === "image/png" ? ".png" : file.mimeType === "video/mp4" ? ".mp4" : file.mimeType === "video/webm" ? ".webm" : ".jpg"}` };
 };
 const counts = async user => {
   const [result] = await Complaint.aggregate([{ $match: scope(user) }, { $group: { _id: null, total: { $sum: 1 }, open: { $sum: { $cond: [{ $in: ["$status", ["RESOLVED", "CLOSED"]] }, 0, 1] } }, resolved: { $sum: { $cond: [{ $eq: ["$status", "RESOLVED"] }, 1, 0] } }, urgent: { $sum: { $cond: [{ $eq: ["$priority", "URGENT"] }, 1, 0] } }, escalated: { $sum: { $cond: [{ $gt: ["$escalationLevel", 0] }, 1, 0] } }, requests: { $sum: { $cond: ["$escalationRequestedAt", 1, 0] } } } }]);

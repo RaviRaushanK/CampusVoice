@@ -273,3 +273,40 @@ describe("Security and dashboards", () => {
     expect((await call("get", "students", student)).status).toBe(403);
   });
 });
+
+describe("Scoped academic dropdown options", () => {
+  test("returns unique class years and sections only inside the HOD department", async () => {
+    await group(departmentA, { section: "A", academicYear: "2026-2027" });
+    await group(departmentA, { section: "B", academicYear: "2026-2027" });
+    await group(departmentA, { section: "C", academicYear: "2025-2026", isActive: false });
+    await group(departmentB, { section: "Z", academicYear: "2029-2030" });
+    const all = await call("get", "academic/options?resource=classes", hodA);
+    expect(all.status).toBe(200); expect(all.headers["cache-control"]).toBe("no-store");
+    expect(all.body.data).toEqual({ academicYears: ["2025-2026", "2026-2027"], sections: ["A", "B", "C"] });
+    const active = await call("get", "academic/options?resource=classes&status=active", hodA);
+    expect(active.body.data).toEqual({ academicYears: ["2026-2027"], sections: ["A", "B"] });
+    expect(all.text).not.toContain(String(departmentA._id)); expect(all.text).not.toContain("2029-2030");
+  });
+  test("Student section filters include retained history but exclude other departments and roles", async () => {
+    await account("STUDENT", departmentA, { section: "A" }); await account("STUDENT", departmentA, { section: "D", isActive: false });
+    await account("FACULTY", departmentA, { section: "Y" }); await account("STUDENT", departmentB, { section: "Z" });
+    const result = await call("get", "academic/options?resource=students", hodA);
+    expect(result.body.data).toEqual({ academicYears: [], sections: ["A", "D"] });
+  });
+  test("assignment years respect both HOD department and Faculty ownership", async () => {
+    const own = await account(), other = await account(), foreign = await account("FACULTY", departmentB);
+    for (const [faculty, department, year] of [[own, departmentA, "2026-2027"], [other, departmentA, "2027-2028"], [foreign, departmentB, "2028-2029"]]) {
+      const sub = await subject(department, { code: "M" + year.slice(0, 4) }), cls = await group(department, { academicYear: year });
+      await Assignment.create({ facultyId: faculty._id, subjectId: sub._id, classGroupId: cls._id, academicYear: year, departmentId: department._id, createdBy: hodA._id });
+    }
+    expect((await call("get", "academic/options?resource=faculty-assignments", hodA)).body.data.academicYears).toEqual(["2026-2027", "2027-2028"]);
+    expect((await call("get", "academic/options?resource=faculty-assignments/mine", own)).body.data.academicYears).toEqual(["2026-2027"]);
+    expect((await call("get", "academic/options?resource=classes", own)).status).toBe(403);
+  });
+  test.each(["resource[$ne]=classes", "resource=classes&status[$ne]=active", "resource=classes&departmentId=other", "resource=unknown"])("rejects unsupported option query %s", async query => {
+    expect((await call("get", "academic/options?" + query, hodA)).status).toBe(400);
+  });
+  test("options reject unauthenticated, Student and Principal access", async () => {
+    for (const actor of [null, principal, await account("STUDENT")]) expect((await call("get", "academic/options?resource=classes", actor)).status).toBe(actor ? 403 : 401);
+  });
+});

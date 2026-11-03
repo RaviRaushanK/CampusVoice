@@ -3,6 +3,8 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import AlertMessage from "../../components/common/AlertMessage";
+import AuthIntro from "../../components/common/AuthIntro";
+import "../../styles/auth.css";
 
 const Login = () => {
   const { user, doLogin, getDashboardPath, needsPasswordChange, error, loading: authLoading } = useAuth();
@@ -51,8 +53,9 @@ const Login = () => {
 
   return (
     <main className="auth-page">
+      <AuthIntro />
       <section className="auth-panel" aria-labelledby="login-title">
-        <div className="text-center mb-4">
+        <div className="auth-panel-header mb-4">
           <div className="brand-mark auth-brand" aria-hidden="true">
             CV
           </div>
@@ -65,6 +68,7 @@ const Login = () => {
         <AlertMessage type="danger" message={formError || error} />
 
         <h2 className="h5 mb-3">Welcome back</h2>
+        <p className="auth-form-caption">Sign in to your college workspace.</p>
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-3">

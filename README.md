@@ -461,7 +461,7 @@ Anonymous is the default and remains recipient anonymity; the internal Student r
 
 The Phase 7 moderation service is reused for complaint title (trimmed 5–150), description (trimmed 20–5000), escalation reason and resolution summary. Blocked text rejects before mutation or file persistence, with the existing exact rejection message. No second moderation implementation or text rewriting was added.
 
-Evidence is optional and final: up to **3 files**, **5 MB each**, only PDF, JPEG/JPG or PNG. Route-scoped Multer memory parsing bounds files, fields, parts and sizes, then checks extension, declared MIME and file magic bytes. No uploaded file is written until authorization, routing and text/evidence validation pass. Private disk names use UUIDs with exclusive creation; normalized basename metadata is never used as a path. The default storage directory is `uploads/complaints/`, configurable server-side with `COMPLAINT_UPLOAD_DIR`. No static directory exposes it. Written files are cleaned on failed writes; parsing/validation/auth failures create no disk files.
+Evidence is optional and final: up to **3 files**, **5 MB each**, PDF, JPEG/JPG, PNG, MP4 or WebM. Route-scoped Multer memory parsing bounds files, fields, parts and sizes, then checks extension, declared MIME and file magic bytes. No uploaded file is written until authorization, routing and text/evidence validation pass. Private disk names use UUIDs with exclusive creation; normalized basename metadata is never used as a path. The default storage directory is `uploads/complaints/`, configurable server-side with `COMPLAINT_UPLOAD_DIR`. No static directory exposes it. Written files are cleaned on failed writes; parsing/validation/auth failures create no disk files.
 
 Every download authenticates and rechecks complaint ownership/explicit handling grants and attachment membership. Responses force download with the validated MIME, generic Attachment-N filename, no-store and nosniff. Handlers always receive generic Attachment N labels, including for Named cases; only the author sees sanitized original filename metadata. The anonymous form warns users to avoid identifying themselves inside evidence; the application does not redact file contents.
 
@@ -607,7 +607,7 @@ Student authentication actors display only “Student account”; their internal
 - API responses now set nosniff, DENY framing, no-referrer, a restrictive API-only CSP and camera/microphone/geolocation denial. Production adds HSTS. This API CSP is not applied to SPA HTML. Vite development/preview supply suitable frontend headers: production scripts self-only; no objects/framing; configured API connection origin; local HMR allowance only in development. Inline styles remain permitted for existing Bootstrap/CSS charts. Real production hosting must preserve the frontend headers at its HTTPS reverse proxy/static host.
 - Normal JSON/URL-encoded bodies remain 16 KB; the 2 MB JSON exception remains scoped to Feedback Sessions. Multipart remains complaint-only with explicit fields/parts/count/size limits. Query/body allowlists reject Mongo operators and mass assignment. Errors omit stack traces, connection details, paths and token internals; audit unavailability uses a deliberate safe exception message.
 - Anonymous serializers, department/Faculty ownership, complaint current/prior grants, Against-Faculty/Against-HOD exclusions, Principal aggregate-only Feedback and private Suggestions were reviewed and retained. Shared analytics never changes authorization because of a role label, priority or client scope parameter.
-- PDF/JPEG/PNG evidence remains optional/final, maximum 3 × 5 MB, validated by extension, MIME and magic bytes, with generated private filenames, authorized forced downloads, generic handler display names and failure cleanup. Magic-byte checks are not malware scanning or document-content redaction. Anonymous upload guidance remains factual, including the Safety/Urgent emergency disclaimer.
+- PDF/JPEG/PNG/MP4/WebM evidence remains optional/final, maximum 3 × 5 MB, validated by extension, MIME and magic bytes, with generated private filenames, authorized forced downloads, generic handler display names and failure cleanup. Magic-byte checks are not malware scanning or document-content redaction. Anonymous upload guidance remains factual, including the Safety/Urgent emergency disclaimer.
 
 ### Dependencies, secrets and repository review
 
@@ -664,3 +664,58 @@ Actual validation commands are `npm run check:backend`, `npm run test:backend`, 
 Full integration includes all four roles at 1440/1024/768/375/320px and critical 1440/320px session, message, complaint, Analytics/DSA and Audit workflows. Before/after read-only development fingerprints verify record counts and SHA-256 hashes. If acknowledged real user activity changes the baseline, retain the original manifests and perform another controlled full verification; do not overwrite user data to make hashes match.
 
 Real limitations remain: notifications are in-app; no email/SMS, AI, public registration or report exports; no automatic complaint escalation/emergency response; recipient rather than database anonymity; evidence content may voluntarily identify its author; no antivirus/content redaction; current eligibility can make historical participation exceed 100%; processing views are bounded; inactive/transferred designated handlers are not silently reassigned. Audit is application-level, not retroactive or cryptographically tamper-proof, and unconfirmed outcomes require review. Production TLS/hosting/DB access/backup and retention operations remain deployment responsibilities. No additional development phase is introduced.
+
+
+## Frontend design and responsive styling
+
+CampusVoice uses one navy/blue academic design system across Principal, HOD, Faculty and Student workspaces, with system fonts, Bootstrap 5 grids/controls and Bootstrap Icons. No additional UI framework, external font or image dependency is required.
+
+Styles live in `frontend/src/styles/`: `variables.css` owns tokens; `index.css` contains only base/global styles; `layout.css`, `components.css`, `forms.css`, `tables.css` and `responsive.css` provide shared presentation. Dedicated `auth`, `dashboard`, `profile`, `academic`, `feedback`, `messages`, `complaints`, `analytics`, `notifications` and `audit` stylesheets are imported by their owning page families. Bootstrap is imported once in `main.jsx`. Page styling is not collected in a giant `index.css`.
+
+Desktop content has bounded widths; tablet/mobile navigation becomes a keyboard-accessible drawer. At 320px, forms/cards stack, academic tables retain their columns inside labelled scroll regions, and audit rows become labelled cards. Selected identity/rating controls, visible focus and reduced-motion overrides preserve accessible interaction. Dashboard values still come from the API; no fake production data was added.
+
+See [the complete UI route and visual-review inventory](docs/UI_REVIEW.md) for all 44 rendered-page patterns, shared states, stylesheet ownership and the isolated screenshot utility. The styling pass verifies presentation and focused frontend behavior; the Team Lead's dedicated full functional regression stage remains separate.
+
+### Navigation and motion
+
+The sidebar keeps its brand and bottom information fixed while only the menu
+scrolls, using a thin visible scrollbar. In the HOD menu, Classes appears before
+Students so cohort setup precedes Student entry. Every workspace page includes
+a responsive CampusVoice footer, positioned at the bottom on short pages.
+
+Shared `motion.css`, imported once in `main.jsx`, adds brief entrances for page
+headings, login panels, panels/cards, empty states and dialogs, plus fades for
+alerts and the mobile-menu backdrop. Buttons, dashboard cards/shortcuts and
+sidebar icons have subtle interaction effects; hover movement applies only to
+devices with a fine pointer and hover support. Entrances take 160–240 ms and do
+not delay actions or data loading. Motion is enabled only when
+`prefers-reduced-motion: no-preference`; global reduced-motion overrides also
+cover existing transitions. No animation dependency was added.
+
+The motion update was checked with the production build, 50 focused navigation
+and authentication tests, and a mobile browser check confirming normal/reduced
+motion behavior and no horizontal page overflow.
+
+
+Complaint attachments also support MP4/WebM videos within the same 3-file, 5 MB-per-file limits. Separate picker selections accumulate; files can be removed before submission. Video extension/MIME/container headers are checked. WebM requires its EBML DocType; MP4 requires an appropriate file-type brand. This is not full media decoding, malware scanning or metadata redaction. Videos use the same private, authorized download path as other evidence.
+
+### HOD-managed Student batches and sections
+
+In **Classes > Add Class Group**, the HOD defines the admission batch and section
+(A, B, C, etc.) for their department. Repeat for the required sections. **Students
+> Add Student** and **Edit Student** then show Admission batch and Section as
+dropdowns populated from active department class groups. The form provides a
+management link that opens in another tab and a refresh button so new options
+can be loaded without losing entered Student details. Existing Student values
+remain available while editing, including older/inactive cohorts. No batches or
+sections are automatically seeded.
+
+Faculty Assignment creation also uses an Academic year dropdown populated from
+active department classes. Choose the year before the class group; changing it
+clears the previous class selection and loads only matching classes. Academic
+year filters in Classes/Faculty Assignments/My Assignments and section filters
+in Classes/Students are dropdowns backed by actual authorized records, including
+retained history. `GET /api/academic/options` returns only distinct permitted
+year/section labels; HOD department and Faculty ownership boundaries are enforced.
+Class creation keeps text inputs so the HOD can define new academic years,
+admission batches and sections.

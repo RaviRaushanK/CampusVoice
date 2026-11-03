@@ -26,4 +26,4 @@ const assignment = {
   list: respond(req => assignments.list(req.user, req.academicQuery)), get: respond(req => assignments.get(req.user, req.params.id)),
   create: respond(req => assignments.create(req.user, req.academicInput), 201), update: respond(req => assignments.update(req.user, req.params.id, req.academicInput)),
 };
-module.exports = { department, hods: accounts("HOD"), faculty: accounts("FACULTY"), students: accounts("STUDENT"), subjects, classes, assignment, dashboard: respond(req => dashboard.getDashboard(req.user)) };
+module.exports = { options: respond(req => require("../services/academicOptionsService").get(req.user, req.query)), department, hods: accounts("HOD"), faculty: accounts("FACULTY"), students: accounts("STUDENT"), subjects, classes, assignment, dashboard: respond(req => dashboard.getDashboard(req.user)) };

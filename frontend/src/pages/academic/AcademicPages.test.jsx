@@ -5,7 +5,7 @@ import App from "../../App";
 import * as api from "../../services/academicService";
 import * as auth from "../../services/authService";
 import * as notifications from "../../services/notificationService";
-vi.mock("../../services/academicService", () => ({ listAcademic: vi.fn(), createAcademic: vi.fn(), updateAcademic: vi.fn(), getAcademicDashboard: vi.fn() }));
+vi.mock("../../services/academicService", () => ({ listAcademic: vi.fn(), getAcademicOptions: vi.fn(), createAcademic: vi.fn(), updateAcademic: vi.fn(), getAcademicDashboard: vi.fn() }));
 vi.mock("../../services/authService", () => ({ me: vi.fn(), login: vi.fn(), logout: vi.fn(), changePassword: vi.fn() }));
 vi.mock("../../services/notificationService", () => ({ getUnreadCount: vi.fn() }));
 const user = role => ({ id: "actor", name: "Authenticated User", role, userCode: "actor", mustChangePassword: false });
@@ -19,6 +19,7 @@ beforeEach(() => {
   notifications.getUnreadCount.mockResolvedValue({ data: { count: 0 } });
   api.getAcademicDashboard.mockResolvedValue({ data: { metrics: { Departments: 2 } } });
   api.listAcademic.mockResolvedValue(pageResult());
+  api.getAcademicOptions.mockResolvedValue({ data: { academicYears: ["2026-2027"], sections: ["A"] } });
   api.createAcademic.mockResolvedValue({ data: row }); api.updateAcademic.mockResolvedValue({ data: row });
 });
 afterEach(() => { cleanup(); vi.resetAllMocks(); });
@@ -56,11 +57,11 @@ it("creates a department and validates empty input before sending", async () => 
   expect(api.createAcademic).toHaveBeenCalledWith("departments", { name: "Computer Applications", code: "MCA", description: "", isActive: true });
 });
 it.each([["/hods", "PRINCIPAL", "HOD"], ["/faculty", "HOD", "Faculty"], ["/students", "HOD", "Student"]])("%s provisions accounts with temporary passwords and no client role", async (path, role, singular) => {
-  api.listAcademic.mockImplementation(async resource => resource === "departments" ? pageResult([department]) : pageResult());
+  api.listAcademic.mockImplementation(async resource => resource === "departments" ? pageResult([department]) : resource === "classes" ? pageResult([{ id: "class", batch: "2025-2027", section: "A", isActive: true }]) : pageResult());
   open(path, role); fireEvent.click(await screen.findByRole("button", { name: `Add ${singular}` }));
   change("Name", "New Person"); change("Email", "new@example.edu"); change(singular === "Student" ? "USN / User code" : "User code", "new.person"); change("Temporary password", "Temporary_123!");
   if (singular === "HOD") { await screen.findByRole("option", { name: "MCA — Computer Applications" }); change("Department", "dept"); }
-  if (singular === "Student") { change("Semester", "2"); change("Section", "A"); change("Admission batch", "2025-2027"); }
+  if (singular === "Student") { await screen.findByRole("option", { name: "2025-2027", exact: true }); change("Semester", "2"); change("Section", "A"); change("Admission batch", "2025-2027"); }
   fireEvent.click(screen.getByRole("button", { name: "Save Changes" })); await screen.findByText(`${singular} saved successfully.`);
   const fields = api.createAcademic.mock.calls[0][1]; expect(fields.initialPassword).toBe("Temporary_123!"); expect(fields).not.toHaveProperty("role");
   if (singular !== "HOD") expect(fields).not.toHaveProperty("departmentId");
@@ -77,7 +78,7 @@ it("creates assignments with server-backed choices and no department field", asy
   api.listAcademic.mockImplementation(async resource => resource === "faculty-assignments" ? pageResult() : pageResult([row]));
   open("/faculty-assignments", "HOD"); fireEvent.click(await screen.findByRole("button", { name: "Add Assignment" }));
   await screen.findByRole("option", { name: "Example Person (example.person)" });
-  change("Faculty", "record"); change("Subject", "record"); change("Class group", "record"); change("Academic year", "2026-2027");
+  change("Faculty", "record"); change("Subject", "record"); await within(screen.getByLabelText("Academic year", { exact: true })).findByRole("option", { name: "2026-2027", exact: true }); change("Academic year", "2026-2027"); await screen.findByRole("option", { name: /Semester 2 \/ A \/ 2026-2027/ }); change("Class group", "record");
   fireEvent.click(screen.getByRole("button", { name: "Save Changes" })); await screen.findByText("Assignment saved successfully.");
   expect(api.createAcademic).toHaveBeenCalledWith("faculty-assignments", { facultyId: "record", subjectId: "record", classGroupId: "record", academicYear: "2026-2027", isActive: true });
 });
@@ -127,4 +128,13 @@ it("Faculty sees only read-only assignment history", async () => {
 it("dashboard displays real zero/nonzero values from the API", async () => {
   api.getAcademicDashboard.mockResolvedValue({ data: { metrics: { Departments: 0, Faculty: 3 } } }); open("/principal/dashboard", "PRINCIPAL");
   await waitFor(() => expect(screen.getByText("0")).toBeTruthy()); expect(screen.getByText("3")).toBeTruthy();
+});
+
+it.each([["/faculty-assignments", "HOD", "faculty-assignments", "Academic year filter", "2026-2027", "academicYear"], ["/my-assignments", "FACULTY", "faculty-assignments/mine", "Academic year filter", "2026-2027", "academicYear"], ["/students", "HOD", "students", "Section filter", "A", "section"]])("%s filters use scoped dropdown options", async (path, role, resource, label, value, key) => {
+  open(path, role);
+  const select = await screen.findByLabelText(label); expect(select.tagName).toBe("SELECT");
+  await within(select).findByRole("option", { name: value, exact: true });
+  change(label, value); fireEvent.click(screen.getByRole("button", { name: "Search", exact: true }));
+  await waitFor(() => expect(api.listAcademic).toHaveBeenCalledWith(resource, expect.objectContaining({ [key]: value, page: 1 }), expect.anything()));
+  expect(api.getAcademicOptions).toHaveBeenCalledWith(resource, "all", expect.anything());
 });

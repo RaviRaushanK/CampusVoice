@@ -6,6 +6,7 @@ const controller = require("../controllers/academicController");
 router.use((req, res, next) => { res.set("Cache-Control", "no-store"); next(); });
 router.use(["/academic", "/departments", "/hods", "/faculty", "/students", "/subjects", "/classes", "/faculty-assignments"], protect);
 router.get("/academic/dashboard", controller.dashboard);
+router.get("/academic/options", requireRole("HOD", "FACULTY"), controller.options);
 router.get("/faculty-assignments/mine", requireRole("FACULTY"), validateQuery, controller.assignment.list);
 router.get("/departments", requireRole("PRINCIPAL", "HOD"), validateQuery, controller.department.list);
 router.get("/departments/:id", requireRole("PRINCIPAL", "HOD"), validateId, controller.department.get);

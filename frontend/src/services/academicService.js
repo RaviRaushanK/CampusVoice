@@ -6,3 +6,4 @@ export const listAcademic = (resource, query = {}, options = {}) => {
 export const createAcademic = (resource, fields) => request(`/${resource}`, { method: "POST", body: JSON.stringify(fields) });
 export const updateAcademic = (resource, id, fields) => request(`/${resource}/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(fields) });
 export const getAcademicDashboard = (options = {}) => request("/academic/dashboard", options);
+export const getAcademicOptions = (resource, status = "all", options = {}) => request(`/academic/options?${new URLSearchParams({ resource, status })}`, options);

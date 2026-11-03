@@ -1,0 +1,20 @@
+.analytics-page { min-width: 0; overflow-wrap: anywhere; }
+.analytics-page .panel, .analytics-page input, .analytics-page select { min-width: 0; max-width: 100%; }
+.analytics-page > section.panel > h3 { padding-bottom: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--cv-border); font-size: 1.1rem; }
+.analytics-page section.panel .stat-card { box-shadow: none; background: #fbfcfe; min-height: 96px; }
+.analytics-page section.panel .stat-card strong { font-size: 1.35rem; }
+.analytics-page > p { color: var(--cv-text-muted); font-size: .78rem; }
+.analytics-page section > p { color: var(--cv-text-muted); font-size: .8rem; }
+.analytics-page .result-distribution { background: var(--cv-surface); }
+.analytics-page form[aria-label="Analytics date range"] { border-left: 3px solid #a5b9e5; }
+.analytics-page form[aria-label="Analytics date range"] p { font-size: .73rem; }
+.analytics-page form[aria-label="Search processing queue"] { max-width: 880px; }
+.processing-list { list-style: none; counter-reset: queue; padding: 0; }
+.processing-list > li { position: relative; counter-increment: queue; padding-left: 4rem; }
+.processing-list > li::before { content: counter(queue, decimal-leading-zero); position: absolute; left: 1.1rem; top: 1.25rem; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 6px; background: var(--cv-primary-light); color: var(--cv-primary); font-size: .77rem; font-weight: 700; }
+.processing-list h3 a { text-decoration: none; color: var(--cv-heading); }
+.processing-list h3 a:hover { color: var(--cv-primary); text-decoration: underline; }
+.processing-list p { font-size: .8rem; }
+.cv-processing-explainer { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem; border: 1px solid #d3e1f6; border-radius: var(--cv-radius-md); background: #eef4fd; }
+.cv-processing-explainer > .bi { color: var(--cv-primary); font-size: 1.3rem; }
+@media (max-width: 575.98px) { .analytics-page form .btn { width: 100%; } .processing-list > li { padding-left: 3.5rem; } .processing-list > li::before { left: .8rem; } }

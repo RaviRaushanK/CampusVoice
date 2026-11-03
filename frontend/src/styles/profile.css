@@ -1,0 +1,9 @@
+.profile-details { max-width: 1060px; min-width: 0; overflow-wrap: anywhere; }
+.profile-details > section[aria-label="Profile overview"] { padding: 1.5rem; border-top: 3px solid var(--cv-primary); }
+.profile-details > section[aria-label="Profile overview"] .brand-mark { width: 64px; height: 64px; border-radius: 50%; background: var(--cv-primary-light); color: var(--cv-primary-dark); font-size: 1.4rem; border: 1px solid #d9e3fa; }
+.profile-details .panel-heading { padding-bottom: .85rem; border-bottom: 1px solid var(--cv-border); }
+.profile-details dl > div { padding-top: .5rem; }
+.profile-details dd { color: var(--cv-heading); font-size: .88rem; font-weight: 550; }
+.profile-details section[aria-label="Account Information"], .profile-details section[aria-label="Academic / Organization Information"] { background: #fbfcfe; }
+.profile-details dt { font-size: .73rem; }
+.profile-details section[aria-label="Security"] { background: #f0f4fc; }

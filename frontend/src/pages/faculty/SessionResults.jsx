@@ -1,3 +1,4 @@
+import "../../styles/feedback.css";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getSessionResults } from "../../services/feedbackSessionService";

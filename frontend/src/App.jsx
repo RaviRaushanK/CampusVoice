@@ -107,6 +107,7 @@ const App = () => {
             </ProtectedRoute>
           }
         >
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route
             path="dashboard"
             element={<PrincipalDashboard />}
@@ -121,6 +122,7 @@ const App = () => {
             </ProtectedRoute>
           }
         >
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<HodDashboard />} />
         </Route>
 
@@ -132,6 +134,7 @@ const App = () => {
             </ProtectedRoute>
           }
         >
+
           <Route path="dashboard" element={<FacultyDashboard />} />
         </Route>
 
@@ -143,6 +146,7 @@ const App = () => {
             </ProtectedRoute>
           }
         >
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StudentDashboard />} />
         </Route>
 

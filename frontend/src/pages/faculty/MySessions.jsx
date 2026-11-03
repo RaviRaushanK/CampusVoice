@@ -1,3 +1,5 @@
+import StatusBadge from "../../components/common/StatusBadge";
+import "../../styles/feedback.css";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import * as service from "../../services/feedbackSessionService";
@@ -55,7 +57,7 @@ const MySessions = () => {
     </section>}
     {loading ? <LoadingSpinner label="Loading sessions" /> : data && <>
       {!data.items.length ? <EmptyState title="No feedback sessions yet." message="Create a feedback session for one of your teaching assignments, or choose another status filter." icon="bi-clipboard" /> : <div className="session-cards">{data.items.map(session => <article className="panel mb-3" key={session.id} aria-label={session.title}>
-        <div className="d-flex flex-wrap gap-2 align-items-start justify-content-between"><h3 className="h5">{session.title}</h3><span className="badge text-bg-secondary">{session.availability || session.status}</span></div>
+        <div className="d-flex flex-wrap gap-2 align-items-start justify-content-between"><h3 className="h5">{session.title}</h3><StatusBadge value={session.availability || session.status}>{session.availability || session.status}</StatusBadge></div>
         <p>{assignmentLabel(session)}</p><p>{session.questionCount} questions · {session.allowAnonymous ? "Students may choose to stay anonymous" : "Identity will be required"}</p>
         <p>Opens: {formatDate(session.opensAt)}<br />Closes: {formatDate(session.closesAt)}</p>
         {session.status === "DRAFT" && <div className="d-flex flex-wrap gap-2"><Link to={`/my-sessions/${session.id}/edit`} className="btn btn-outline-primary">Edit Draft</Link><button className="btn btn-outline-danger" disabled={deleting} onClick={() => { setLifecycle(null); setConfirmation(session); }}>Delete Draft</button><button className="btn btn-primary" disabled={deleting} onClick={() => { setConfirmation(null); setLifecycle({ session, action: "publish" }); }}>Publish Session</button></div>}

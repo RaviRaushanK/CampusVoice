@@ -15,6 +15,11 @@ const open = path => render(<MemoryRouter initialEntries={[path]}><App /></Memor
 beforeEach(() => notifications.getUnreadCount.mockResolvedValue({ data: { count: 0 } }));
 beforeEach(() => academic.getAcademicDashboard.mockResolvedValue({ data: { metrics: {} } }));
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.useRealTimers(); });
+it.each(roles)("%s workspace root recovers to its own dashboard", async role => {
+  auth.me.mockResolvedValue({ data: profile(role) });
+  open(`/${role.toLowerCase()}`);
+  expect(await screen.findByText("Workspace ready")).toBeTruthy();
+});
 it.each(roles)("direct %s dashboard URL requires authentication", async role => {
   auth.me.mockRejectedValue({ status: 401 }); open(`/${role.toLowerCase()}/dashboard`);
   expect(await screen.findByRole("heading", { name: "Welcome back" })).toBeTruthy();

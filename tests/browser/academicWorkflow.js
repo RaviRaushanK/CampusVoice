@@ -35,8 +35,8 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
     }
     if (type === "Student") {
       await page.getByLabel("Semester", { exact: true }).selectOption("2");
-      await page.getByLabel("Section", { exact: true }).fill(studentSection);
-      await page.getByLabel("Admission batch", { exact: true }).fill("2025-2027");
+      await page.getByLabel("Section", { exact: true }).selectOption(studentSection.toUpperCase());
+      await page.getByLabel("Admission batch", { exact: true }).selectOption("2025-2027");
     }
     await checkLayout(page);
     await page.screenshot({ path: resolve(artifacts, `academic-${type.toLowerCase()}-form-${width}.png`), fullPage: true });
@@ -72,12 +72,24 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await logout(); await login(hod.userCode, temporaryPassword, "HOD", true);
   await page.getByText(`Department: ${department.code} — ${department.name}`, { exact: true }).waitFor();
   const faculty = await addAccount({ path: "/faculty", heading: "Faculty Management", type: "Faculty", name: `Academic Faculty ${width}`, code: `academic.faculty.${width}`, email: `faculty.${width}@test.example` });
+  await navigate("/classes", "Class Groups"); await page.getByRole("button", { name: "Add Class Group", exact: true }).click();
+  await page.getByLabel("Semester", { exact: true }).selectOption("2");
+  await page.getByLabel("Section", { exact: true }).fill("A");
+  await page.getByLabel("Academic year", { exact: true }).fill("2026-2027");
+  await page.getByLabel("Admission batch", { exact: true }).fill("2025-2027");
+  const group = await save("classes");
+  await navigate("/classes", "Class Groups"); await page.getByRole("button", { name: "Add Class Group", exact: true }).click();
+  await page.getByLabel("Semester", { exact: true }).selectOption("2");
+  await page.getByLabel("Section", { exact: true }).fill("B");
+  await page.getByLabel("Academic year", { exact: true }).fill("2026-2027");
+  await page.getByLabel("Admission batch", { exact: true }).fill("2025-2027");
+  await save("classes");
   const student = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Academic Student ${width}`, code: `1MV25MC${width}`, email: `student.${width}@test.example` });
   const wrongStudent = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Other Section Student ${width}`, code: `other.student.${width}`, email: `other.student.${width}@test.example`, studentSection: "B" });
   const namedStudent = await addAccount({ path: "/students", heading: "Student Management", type: "Student", name: `Named Feedback Student ${width}`, code: `named.feedback.${width}`, email: `named.feedback.${width}@test.example` });
   await page.getByLabel("Search", { exact: true }).fill(student.userCode);
   await page.getByLabel("Semester filter", { exact: true }).selectOption("2");
-  await page.getByLabel("Section filter", { exact: true }).fill("A");
+  await page.getByLabel("Section filter", { exact: true }).selectOption("A");
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await page.getByRole("cell", { name: student.userCode.toUpperCase(), exact: true }).waitFor();
   await checkLayout(page);
@@ -87,18 +99,12 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await page.getByLabel("Subject code", { exact: true }).fill(`SUB${width}`);
   await page.getByLabel("Semester", { exact: true }).selectOption("2");
   const subject = await save("subjects");
-  await navigate("/classes", "Class Groups"); await page.getByRole("button", { name: "Add Class Group", exact: true }).click();
-  await page.getByLabel("Semester", { exact: true }).selectOption("2");
-  await page.getByLabel("Section", { exact: true }).fill("A");
-  await page.getByLabel("Academic year", { exact: true }).fill("2026-2027");
-  await page.getByLabel("Admission batch", { exact: true }).fill("2025-2027");
-  const group = await save("classes");
   await navigate("/faculty-assignments", "Faculty Assignments"); await page.getByRole("button", { name: "Add Assignment", exact: true }).click();
+  await page.getByLabel("Academic year", { exact: true }).selectOption("2026-2027");
   for (const [label, value] of [["Faculty", faculty.id], ["Subject", subject.id], ["Class group", group.id]]) {
     await page.getByLabel(label, { exact: true }).locator(`option[value="${value}"]`).waitFor({ state: "attached" });
     await page.getByLabel(label, { exact: true }).selectOption(value);
   }
-  await page.getByLabel("Academic year", { exact: true }).fill("2026-2027");
   await checkLayout(page); await page.screenshot({ path: resolve(artifacts, `academic-assignment-form-${width}.png`), fullPage: true });
   await save("faculty-assignments");
   await page.getByRole("cell", { name: `${subject.code} — ${subject.name}`, exact: true }).waitFor();

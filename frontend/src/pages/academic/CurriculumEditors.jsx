@@ -13,6 +13,7 @@ export const ClassEditor = ({ record, onSave, onCancel }) => {
   const [values, setValues] = useState({ semester: record?.semester || 1, section: record?.section || "", academicYear: record?.academicYear || "", batch: record?.batch || "", isActive: record?.isActive ?? true });
   const set = (key, value) => setValues(previous => ({ ...previous, [key]: value }));
   return <AcademicForm title={record ? "Edit Class Group" : "Add Class Group"} values={values} onSave={onSave} onCancel={onCancel}>
+    <p className="col-12 form-text mb-0">Define the admission batch and section here. Values from active class groups appear in the Add/Edit Student dropdowns for your department.</p>
     <SemesterField value={values.semester} onChange={value => set("semester", value)} />
     <TextField label="Section" value={values.section} maxLength={10} onChange={event => set("section", event.target.value)} />
     <TextField label="Academic year" value={values.academicYear} required pattern="20[0-9]{2}-20[0-9]{2}" placeholder="2026-2027" onChange={event => set("academicYear", event.target.value)} />

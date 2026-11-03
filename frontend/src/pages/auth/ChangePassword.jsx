@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import AlertMessage from "../../components/common/AlertMessage";
+import AuthIntro from "../../components/common/AuthIntro";
+import "../../styles/auth.css";
 
 const ChangePassword = () => {
   const {
@@ -80,8 +82,9 @@ const ChangePassword = () => {
 
   return (
     <main className="auth-page">
+      <AuthIntro password />
       <section className="auth-panel" aria-labelledby="password-title">
-        <div className="text-center mb-4">
+        <div className="auth-panel-header mb-4">
           <div className="brand-mark auth-brand" aria-hidden="true">
             CV
           </div>
@@ -97,6 +100,7 @@ const ChangePassword = () => {
           <AlertMessage type="danger" message={formError || error} />
         )}
 
+        <p className="auth-password-note"><i className="bi bi-shield-lock" aria-hidden="true" />{isFirstLogin ? "Choose a personal password to secure your account before entering your workspace." : "Updating your password signs out your other sessions."}</p>
         <form onSubmit={handleSubmit} noValidate>
           <fieldset disabled={loggingOut}>
           <div className="mb-3">

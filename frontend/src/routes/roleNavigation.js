@@ -17,8 +17,8 @@ export const principalNavItems = navigation("principal", [
   ["Notifications", "bi-bell"], ["Profile", "bi-person-circle"],
 ]);
 export const hodNavItems = navigation("hod", [
-  ["Faculty", "bi-people"], ["Students", "bi-mortarboard"],
-  ["Subjects", "bi-book"], ["Classes", "bi-easel"],
+  ["Faculty", "bi-people"], ["Classes", "bi-easel"],
+  ["Students", "bi-mortarboard"], ["Subjects", "bi-book"],
   ["Faculty Assignments", "bi-diagram-3"],
   ["General Feedback", "bi-chat-square-text"],
   ["Complaints", "bi-chat-left-text"], ["Analytics", "bi-bar-chart"],

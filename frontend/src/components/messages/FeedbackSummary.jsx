@@ -1,3 +1,4 @@
+import "../../styles/feedback.css";
 import StatCard from "../common/StatCard";
 import ResultDistribution from "../feedback/ResultDistribution";
 const FeedbackSummary = ({ summary }) => <section aria-label="Feedback summary" className="mb-3">

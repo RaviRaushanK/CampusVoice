@@ -135,7 +135,7 @@ it("prevents repeated submissions while saving and uses authoritative server val
   expect(screen.queryByRole("textbox")).toBeNull();
   expect(within(screen.getByRole("banner")).getByText(saved.name)).toBeTruthy();
   expect(screen.getByText(saved.email)).toBeTruthy();
-  expect(screen.getByText("SC")).toBeTruthy();
+  expect(within(screen.getByRole("region", { name: "Profile overview" })).getByText("SC")).toBeTruthy();
   expect(screen.queryByText("Requested Name")).toBeNull();
 });
 it.each([

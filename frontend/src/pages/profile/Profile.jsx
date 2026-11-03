@@ -1,3 +1,4 @@
+import "../../styles/profile.css";
 import { useEffect, useState } from "react";
 import PageHeader from "../../components/common/PageHeader";
 import LoadingSpinner from "../../components/common/LoadingSpinner";

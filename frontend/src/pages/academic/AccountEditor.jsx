@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AcademicForm, TextField, SemesterField, StatusField } from "../../components/academic/AcademicFields";
 import RecordSelect from "../../components/academic/RecordSelect";
+import StudentCohortFields from "./StudentCohortFields";
 const AccountEditor = ({ record, onSave, onCancel, accountType }) => {
   const isStudent = accountType === "Student";
   const [values, setValues] = useState({ name: record?.name || "", email: record?.email || "", isActive: record?.isActive ?? true,
@@ -19,8 +20,7 @@ const AccountEditor = ({ record, onSave, onCancel, accountType }) => {
     {accountType === "HOD" && <RecordSelect label="Department" name="departmentId" resource="departments" value={values.departmentId} currentLabel={record?.department?.name}
       onChange={value => set("departmentId", value)} describe={department => `${department.code} — ${department.name}`} />}
     {isStudent && <><SemesterField value={values.semester} onChange={value => set("semester", value)} />
-      <TextField label="Section" value={values.section} maxLength={10} onChange={event => set("section", event.target.value)} />
-      <TextField label="Admission batch" placeholder="2025-2027" value={values.batch} onChange={event => set("batch", event.target.value)} pattern="20[0-9]{2}-20[0-9]{2}" /></>}
+      <StudentCohortFields values={values} onChange={set} /></>}
     <StatusField value={values.isActive} onChange={value => set("isActive", value)} />
   </AcademicForm>;
 };

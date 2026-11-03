@@ -1,0 +1,20 @@
+.audit-page { min-width: 0; overflow-wrap: anywhere; }
+.audit-page input, .audit-page select { min-width: 0; max-width: 100%; }
+.audit-info { display: flex; align-items: flex-start; gap: .75rem; padding: 1rem 1.2rem; margin-bottom: 1.2rem; border: 1px solid #d5e1f5; border-radius: var(--cv-radius-md); color: #385a8a; background: #eef4fd; font-size: .8rem; }
+.audit-info > .bi { flex-shrink: 0; font-size: 1.15rem; }
+.audit-page form[aria-label="Audit filters"] p { font-size: .74rem; }
+.audit-table { min-width: 760px; }
+.audit-table td:first-child { min-width: 210px; }
+.audit-table td { min-width: 130px; vertical-align: top; }
+.audit-table td:last-child { max-width: 300px; min-width: 180px; font-size: .75rem; }
+.audit-table td > p { margin-bottom: .4rem; }
+.audit-table h3 { font-size: .8rem; color: var(--cv-primary-dark); margin-bottom: .65rem; }
+.audit-table time { font-size: .74rem; color: var(--cv-text-muted); }
+@media (max-width: 767.98px) {
+  .audit-table-container { overflow: visible; border: 0; background: transparent; }
+  .audit-table, .audit-table tbody { display: block; min-width: 0; }
+  .audit-table thead { position: absolute; width: 1px; height: 1px; clip-path: inset(50%); overflow: hidden; }
+  .audit-table tbody tr { display: block; padding: .5rem 1rem; margin-bottom: .8rem; border: 1px solid var(--cv-border); border-radius: var(--cv-radius-md); background: var(--cv-surface); }
+  .audit-table tbody td { display: block; min-width: 0; max-width: none; padding: .65rem 0; border: 0; }
+  .audit-table td::before { content: attr(data-label); display: block; margin-bottom: .3rem; color: var(--cv-text-muted); font-size: .64rem; text-transform: uppercase; letter-spacing: .07em; }
+}

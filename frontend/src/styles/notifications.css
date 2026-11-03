@@ -1,0 +1,12 @@
+.notification-bell { position: relative; text-decoration: none; }
+.notification-badge { position: absolute; top: -5px; right: -6px; min-width: 19px; padding: .15rem .25rem; font-size: .6rem; border: 2px solid var(--cv-surface); border-radius: 12px; }
+.notifications-page, .notification-item { min-width: 0; overflow-wrap: anywhere; }
+.notification-list { display: grid; gap: .85rem; padding: 0; margin: 0; list-style: none; }
+.notification-item { position: relative; padding-left: 3.8rem; box-shadow: none; }
+.notification-item::before { content: "\F18A"; font-family: "bootstrap-icons"; position: absolute; left: 1.1rem; top: 1.2rem; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #f0f3f8; color: var(--cv-text-muted); }
+.notification-item.is-unread { background: #f5f8ff; border-left: 3px solid var(--cv-primary); }
+.notification-item.is-unread::before { color: var(--cv-primary); background: #e6edfc; }
+.notification-item h3 { font-size: .93rem; margin-bottom: .45rem; }
+.notification-message { white-space: pre-wrap; font-size: .84rem; line-height: 1.7; }
+.notification-item time { font-size: .72rem; }
+@media (max-width: 575.98px) { .notification-item { padding-left: 1rem; } .notification-item::before { display: none; } }

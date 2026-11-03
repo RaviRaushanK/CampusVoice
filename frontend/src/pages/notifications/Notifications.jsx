@@ -1,3 +1,4 @@
+import "../../styles/notifications.css";
 import { useEffect, useRef, useState } from "react";
 import { useNotifications } from "../../context/NotificationContext";
 import { getNotifications } from "../../services/notificationService";

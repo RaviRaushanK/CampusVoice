@@ -1,0 +1,15 @@
+.message-page, .message-list { min-width: 0; overflow-wrap: anywhere; }
+.message-page select, .message-page textarea { max-width: 100%; min-width: 0; }
+.message-page > form { padding: 1.4rem; margin-bottom: 2rem; border: 1px solid var(--cv-border); border-top: 3px solid var(--cv-primary); border-radius: var(--cv-radius-md); background: var(--cv-surface); }
+.message-page > form fieldset > fieldset { padding: 1rem 0; border-bottom: 1px solid var(--cv-border); }
+.message-page > form fieldset > fieldset legend { font-size: .85rem; font-weight: 650; }
+.message-page > form > fieldset > p { font-size: .77rem; }
+.message-list { margin-top: 1.5rem; }
+.message-list > h3 { padding-bottom: .9rem; border-bottom: 1px solid var(--cv-border); margin-bottom: 1.25rem; }
+.message-list > article { border-left: 3px solid #c7d6f2; }
+.message-list > article > h4 { display: flex; align-items: center; gap: .5rem; color: var(--cv-primary-dark); font-size: .85rem; }
+.message-list > article > h4::before { content: ""; width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--cv-primary); }
+.message-list > article > p:not(.message-text) { color: var(--cv-text-muted); font-size: .78rem; }
+.message-text { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.8; }
+.cv-privacy-note { display: flex; align-items: flex-start; gap: .6rem; margin-bottom: 1.25rem; padding: .8rem 1rem; border: 1px solid #d3e9f3; border-radius: var(--cv-radius-sm); color: #25617c; background: #edf7fb; font-size: .79rem; }
+@media (max-width: 575.98px) { .message-page > form { padding: 1rem; } }
