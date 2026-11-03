@@ -1,0 +1,11 @@
+const router = require("express").Router();
+const { protect } = require("../middleware/authMiddleware");
+const { requireRole } = require("../middleware/roleMiddleware");
+const controller = require("../controllers/messageController").suggestions;
+router.use((req, res, next) => { res.set("Cache-Control", "no-store"); next(); }, protect);
+router.get("/faculty-options", requireRole("STUDENT"), controller.options);
+router.post("/", requireRole("STUDENT"), controller.create);
+router.get("/mine", requireRole("STUDENT"), controller.mine);
+router.get("/received", requireRole("FACULTY"), controller.received);
+router.get("/:id", requireRole("STUDENT", "FACULTY"), controller.get);
+module.exports = router;

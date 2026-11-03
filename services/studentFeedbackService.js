@@ -59,6 +59,8 @@ const get = async (user, identifier) => {
 const submit = async (user, identifier, body) => {
   const { current, session } = await getEligible(user, identifier);
   const fields = parseResponse(body, session);
+  const freeTextIds = new Set(session.questions.filter(question => question.type === "SHORT_ANSWER").map(question => String(question._id)));
+  for (const answer of fields.answers) if (freeTextIds.has(String(answer.questionId))) require("./contentModerationService").validateText(answer.value);
   await SessionResponse.init();
   // This conditional session write is the admission point, ordered atomically
   // against manual Close. Already-admitted requests may finish after Close.

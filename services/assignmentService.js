@@ -50,4 +50,4 @@ const update = async (user, identifier, fields) => {
   if (fields.isActive) await verify(filter.departmentId, current);
   return persist(async () => { available(await FacultyAssignment.findOneAndUpdate(filter, { $set: { isActive: fields.isActive } }, { new: true, runValidators: true })); return get(user, identifier); });
 };
-module.exports = { list, get, create, update };
+module.exports = { list, get, create, update, toSafeAssignment: safe };

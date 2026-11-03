@@ -108,6 +108,7 @@ const run = async () => {
     const page = await context.newPage();
     page.on("pageerror", error => errors.push(error.message));
     page.on("console", message => {
+      if (page.expectPhase7ModerationRejection && message.location().url === `${apiOrigin}/api/general-feedback` && message.text().includes("400 (Bad Request)")) return;
       if (message.type() === "error" && !message.text().includes("401 (Unauthorized)")) errors.push(message.text());
     });
     await page.goto(`${frontendOrigin}/notifications`);

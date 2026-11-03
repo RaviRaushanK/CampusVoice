@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const { resolve } = require("node:path");
 const { runFeedbackWorkflow } = require("./feedbackWorkflow");
 const { runResponseWorkflow } = require("./responseWorkflow");
+const { runMessagesWorkflow } = require("./messagesWorkflow");
 
 const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, principalPassword, temporaryPassword, checkLayout, artifacts }) => {
   const navigate = async (path, heading) => {
@@ -108,7 +109,7 @@ const runAcademicWorkflow = async ({ page, frontendOrigin, apiOrigin, width, pri
   await runResponseWorkflow({ page, frontendOrigin, apiOrigin, width, checkLayout, artifacts, sessionId: feedback.id, student, wrongStudent, namedStudent, faculty, temporaryPassword, login, logout });
   await page.getByText("Semester: 2", { exact: true }).waitFor();
   await page.getByText("Admission batch: 2025-2027", { exact: true }).waitFor(); await checkLayout(page);
-  await logout(); await login("browser.principal", principalPassword, "PRINCIPAL");
+  await runMessagesWorkflow({ page, frontendOrigin, apiOrigin, width, artifacts, checkLayout, student, namedStudent, faculty, hod, principalPassword, temporaryPassword, login, logout });
   console.log(`PASS: Principal → Department/HOD → HOD Faculty/Student/Subject/Class/Assignment → Faculty assignment visibility → Student academic information at ${width}px`);
 };
 module.exports = { runAcademicWorkflow };

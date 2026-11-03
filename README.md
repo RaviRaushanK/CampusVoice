@@ -270,7 +270,7 @@ Notification fixtures are created only in guarded, isolated test databases using
 
 ## Scope and next phase
 
-Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 — Feedback & Survey System is complete: Faculty session building/publishing, Student participation, and privacy-safe Faculty results with question analytics. General feedback, suggestions, complaints, institution/department analytics and DSA features remain deferred.
+Phase 1–5 authentication, profile, notification, shared-layout, health and academic behavior is retained. Phase 6 — Feedback & Survey System is complete: Faculty session building/publishing, Student participation, and privacy-safe Faculty results with question analytics. Phase 7 adds General Feedback, Private Suggestions and shared content moderation below. Complaints, advanced institution/department analytics and DSA features remain deferred.
 
 Phase 5 supplies the academic foundation required by later feedback/session modules. It does not generate business notifications or implement those later modules.
 
@@ -352,7 +352,7 @@ Part 3 adds Faculty results and question analytics as described below. CSV expor
 
 ## Phase 6 Part 3 — Faculty Results and Session Analytics
 
-**Phase 6 — Feedback & Survey System: COMPLETE (Parts 1, 2 and 3).** Full backend, frontend and browser regression, privacy checks and development-database fingerprint verification passed. CSV export is optional and deferred; it does not block Phase 6 completion. Phase 7 has not started.
+**Phase 6 — Feedback & Survey System: COMPLETE (Parts 1, 2 and 3).** Full backend, frontend and browser regression, privacy checks and development-database fingerprint verification passed. CSV export is optional and deferred; it does not block Phase 6 completion. Phase 7 is documented below.
 
 Faculty can open View Results for their own published sessions at `/my-sessions/:sessionId/results`. OPEN results are live and refresh manually; scheduled and closed/expired results remain readable. Draft results return a controlled conflict. Student, HOD and Principal roles cannot use Faculty results endpoints. The Faculty dashboard now counts real Draft/Open/Scheduled/Closed sessions using the same effective availability rules as participation. My Sessions links to Results without making an analytics request for every card.
 
@@ -366,4 +366,39 @@ Short answers load on demand through `GET /api/feedback-sessions/:sessionId/resu
 
 The Results page uses shared loading/alert/stat/layout components, question cards, responsive CSS bar charts with adjacent readable counts/percentages, paginated text cards, empty states, retries, and manual Refresh. Charts add no dependencies and never replace numeric data. There is no automatic analytics polling, anonymous-identity reveal endpoint, generic raw-response listing, CSV export, AI analysis or cross-Faculty analytics. Backend HTTP tests inspect complete responses for anonymous identity leakage; frontend and isolated browser tests cover both Anonymous and Named display.
 
-Part 1/2 body limits, notifications, response finality, uniqueness, identity lock, eligibility and availability behavior are retained. The 2 MB JSON allowance remains limited to Feedback resources; other JSON and all URL-encoded requests remain at 16 KB. Tests use guarded isolated databases, with read-only development fingerprints before/after verification. General Feedback, Private Suggestions, moderation, Complaints/routing, HOD/Principal analytics, DSA and AI analysis remain outside this implementation.
+Part 1/2 body limits, notifications, response finality, uniqueness, identity lock, eligibility and availability behavior are retained. The 2 MB JSON allowance remains limited to Feedback Session resources; other JSON and all URL-encoded requests remain at 16 KB. Tests use guarded isolated databases, with read-only development fingerprints before/after verification. Phase 7 extends moderation to new Session SHORT_ANSWER submissions. Complaints/routing, advanced HOD/Principal analytics, DSA and AI analysis remain outside this implementation.
+
+## Phase 7 — General Feedback, Private Suggestions and Content Moderation
+
+**Phase 7 — General Feedback + Private Suggestions + Content Moderation: COMPLETE.** Validation passed: 71 backend files syntax-checked, 596 backend tests, 267 frontend tests, production build, six browser-script syntax checks, and the full four-role browser suite at 1440/1024/768/375/320px with focused Phase 7 flows at 1440/320px. No tests failed or were skipped. Development collection counts and SHA-256 fingerprints remained identical before/after validation. Phase 8 remains deferred.
+
+Students submit General Feedback through `/student/general-feedback`, choosing a server-derived active teaching assignment relevant to their current Department, semester, normalized section and batch (when the class specifies one). The existing assignment usability checks verify active Department/Faculty/Subject/Class sources, matching academic year/semester and consistent departments. Options are paginated; submission revalidates the relationship. The server derives Student, Faculty, Subject and Department references. Rating is integer 1–5; trimmed messages are 10–2000 characters. Feedback is final, with no edit/delete/identity-changing endpoints, and students may submit again in the future without a lifetime uniqueness constraint.
+
+Student own history includes submitted text, Faculty/Subject context, rating, identity choice and submission date. Faculty read only feedback addressed to themselves. HOD General Feedback is restricted to both the historical Department and Faculty currently belonging to that Department; transfer does not move old feedback into another Department's HOD view. Faculty/Subject/rating filters preserve that scope. Principal's Feedback Overview exposes only total Feedback, numeric average (null with no feedback), and five rating counts—no text, individual records, identities or Faculty ranking. Faculty/HOD lists include the same bounded summary within their authorized filter.
+
+Private Suggestions at `/student/suggestions` require an active same-Department Faculty recipient, without a Subject. Only the sender's history and the selected Faculty's `/faculty/suggestions` inbox can access a Suggestion. HOD/Principal have no Suggestion endpoints, aggregates, counts or navigation; other Faculty/Students cannot fetch records by ID. Faculty dashboard counts include only their own received Feedback/Suggestions; Student counts include only their own submissions. New per-user/date indexes support newest-first history/inboxes; Feedback also has a Department/date index.
+
+Both modules retain internal Student references for Anonymous and Named messages. Recipient projections remove anonymous Student references inside MongoDB before mapping; only Named IDs on the current page are batch-loaded, exposing name and userCode only. Explicit DTOs omit Student IDs, email, security fields and retry metadata. Anonymous is the default; identity and content are final. Own history is not hidden from its author. No reveal endpoint exists. Individual lists use page 1/limit 20 defaults, maximum limit 100 and deterministic createdAt/_id descending order.
+
+Successful Suggestions attempt one neutral `SUGGESTION` notification to the selected Faculty using the existing notification service. Notification content includes neither sender identity nor message text. Suggestion persistence is primary; delivery failure logs a generic warning and returns an explicit unsuccessful delivery result without rolling back the saved message. The form supplies a UUID `submissionKey`; a unique Student/key index and content fingerprint deduplicate identical concurrent/network retries. Reusing a key for different content returns a conflict. A replay does not send another notification; a new suggestion uses a new key. Clients omitting this optional key do not receive retry deduplication. General Feedback creates no per-submission notifications.
+
+`services/contentModerationService.validateText` is a generic accept/reject service with one server-only terms/config file at `utils/constants/moderation.js`. It uses NFKC/case normalization, zero-width separator handling, Unicode word boundaries, punctuation/whitespace separation and a controlled substitution map. Whole-term matching avoids innocent substring matches. Accepted text is never rewritten by moderation; field validators handle required/length limits. Rejections use only: “Your message contains inappropriate language. Please revise it before submitting.” No public moderation endpoint or frontend blocked-term list is exposed.
+
+Moderation runs before persistence for General Feedback, Suggestions and Session SHORT_ANSWER values. A blocked short answer rejects the entire response before admission or insertion; students can revise and retry. Single Choice, Multi Select and Rating values are not moderated. Existing response uniqueness, identity locking, availability and eligibility rules are preserved. Forms show respectful-language guidance, finality confirmations, processing states and authoritative server errors.
+
+| Endpoint | Role / purpose |
+| --- | --- |
+| `GET /api/general-feedback/options` | Student: own valid paginated Faculty/Subject assignments |
+| `POST /api/general-feedback` | Student: assignment, rating, message, identityMode |
+| `GET /api/general-feedback/mine` | Student: own final history |
+| `GET /api/general-feedback/received` | Faculty: own received feedback and summary |
+| `GET /api/general-feedback/department` | HOD: scoped list/summary; optional facultyId/subjectId/rating filters |
+| `GET /api/general-feedback/aggregate` | Principal: aggregate values only |
+| `GET /api/general-feedback/:id` | Student author, recipient Faculty, or authorized HOD only |
+| `GET /api/suggestions/faculty-options` | Student: active same-Department Faculty |
+| `POST /api/suggestions` | Student: facultyId, message, identityMode, optional submissionKey |
+| `GET /api/suggestions/mine` | Student: own sent history |
+| `GET /api/suggestions/received` | Faculty: own private inbox |
+| `GET /api/suggestions/:id` | Author Student or selected Faculty only |
+
+All endpoints reuse HTTP-only JWT authentication, role/first-login/account-revocation guards, explicit field validation, CSRF and existing error handling. Both new resources retain the normal 16 KB JSON limit. No dependencies, alternate authentication, message queue, Complaints, attachments, routing/escalation, advanced analytics, DSA or AI moderation were introduced. Automated tests use guarded isolated databases and development collection fingerprints; focused browser workflows cover both desktop/mobile and preserve four-role regression at all five widths.

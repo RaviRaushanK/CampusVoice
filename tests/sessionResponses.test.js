@@ -227,8 +227,8 @@ test("bounded list pagination and real student dashboard counts", async () => {
   for (const query of ["limit=101", "page=0", "category=other", "studentId=evil"]) expect((await call("get", `/student?${query}`, student)).status).toBe(400);
   expect((await call("get", "/student?limit=1&page=2", student)).body.data.items).toEqual([]);
   const dashboard = async () => (await request(app).get("/api/academic/dashboard").set("Cookie", `cv_auth=${signToken(student)}`)).body.data.metrics;
-  expect(await dashboard()).toEqual({ "Pending Feedback Sessions": 1, "Completed Feedback Sessions": 0 });
-  await call("post", `/${draft.id}/responses`, student, payload()); expect(await dashboard()).toEqual({ "Pending Feedback Sessions": 0, "Completed Feedback Sessions": 1 });
+  expect(await dashboard()).toEqual({ "Pending Feedback Sessions": 1, "Completed Feedback Sessions": 0, "Feedback Submitted": 0, "Suggestions Sent": 0 });
+  await call("post", `/${draft.id}/responses`, student, payload()); expect(await dashboard()).toEqual({ "Pending Feedback Sessions": 0, "Completed Feedback Sessions": 1, "Feedback Submitted": 0, "Suggestions Sent": 0 });
 });
 test("maximum-size questionnaire including JSON escaping reaches domain validation and persists safely", async () => {
   const make = character => ({ title: "Large valid draft", facultyAssignmentId: String(assignment._id), questions: Array.from({ length: 50 }, () => ({ type: "SINGLE_CHOICE", prompt: character.repeat(1000), required: true, options: Array.from({ length: 20 }, (_, index) => `${String(index).padStart(2, "0")}${character.repeat(198)}`) })) });

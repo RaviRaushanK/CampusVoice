@@ -7,6 +7,8 @@ const FeedbackSession = require("../models/FeedbackSession");
 const { safeDepartment, assertRole } = require("./academicSupport");
 const assignments = require("./assignmentService");
 const { state } = require("./feedbackAvailability");
+const Feedback = require("../models/Feedback");
+const Suggestion = require("../models/Suggestion");
 const getDashboard = async user => {
   assertRole(user, "PRINCIPAL", "HOD", "FACULTY", "STUDENT");
   if (user.role === "PRINCIPAL") {
@@ -27,9 +29,11 @@ const getDashboard = async user => {
       const key = { DRAFT: "Draft Sessions", OPEN: "Open Sessions", SCHEDULED: "Scheduled Sessions", CLOSED: "Closed Sessions" }[state(session, now)];
       metrics[key]++;
     }
-    return { department: safeDepartment(department), assignments: await assignments.list(user, { page: 1, limit: 5, status: "active" }), metrics };
+    const [feedback, suggestions] = await Promise.all([Feedback.countDocuments({ facultyId: user._id }), Suggestion.countDocuments({ facultyId: user._id })]);
+    return { department: safeDepartment(department), assignments: await assignments.list(user, { page: 1, limit: 5, status: "active" }), metrics: { ...metrics, "General Feedback Received": feedback, "Private Suggestions": suggestions } };
   }
+  const [sessions, feedback, suggestions] = await Promise.all([require("./studentFeedbackService").counts(user), Feedback.countDocuments({ studentId: user._id }), Suggestion.countDocuments({ studentId: user._id })]);
   return { department: safeDepartment(department), semester: user.semester ?? null, section: user.section ?? null, batch: user.batch ?? null,
-    metrics: await require("./studentFeedbackService").counts(user) };
+    metrics: { ...sessions, "Feedback Submitted": feedback, "Suggestions Sent": suggestions } };
 };
 module.exports = { getDashboard };

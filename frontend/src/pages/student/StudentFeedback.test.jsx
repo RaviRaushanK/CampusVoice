@@ -77,6 +77,12 @@ it("disables submission during processing and retains values on backend failure"
   fireEvent.click(screen.getByRole("button", { name: "Submitting..." })); expect(api.submitSessionResponse).toHaveBeenCalledOnce(); expect(screen.getByRole("button", { name: "Submitting..." }).disabled).toBe(true);
   await act(async () => reject(new Error("Network failure. Please retry."))); await screen.findByText("Network failure. Please retry."); expect(screen.getByLabelText("Answer question 4").value).toBe("More examples"); expect(screen.getByRole("button", { name: "Submit Feedback" }).closest("fieldset").disabled).toBe(false);
 });
+it("displays authoritative moderation rejection and allows a revised short answer", async () => {
+  const message = "Your message contains inappropriate language. Please revise it before submitting.";
+  api.submitSessionResponse.mockRejectedValueOnce(new Error(message)); await start(); fill(); confirm();
+  await screen.findByText(message); expect(screen.getByText("Please use respectful and appropriate language.")).toBeTruthy(); expect(screen.getByRole("button", { name: "Submit Feedback" }).closest("fieldset").disabled).toBe(false);
+  fireEvent.change(screen.getByLabelText("Answer question 4"), { target: { value: "Revised respectful answer." } }); confirm(); await screen.findByText("Feedback submitted successfully. Thank you for completing this session.");
+});
 it.each(["ALREADY_SUBMITTED", "SESSION_UNAVAILABLE"])("locks editor after authoritative %s submission rejection", async code => {
   api.submitSessionResponse.mockRejectedValueOnce(Object.assign(new Error("This session is unavailable."), { code })); await start(); fill(); confirm(); await screen.findByText("This session is unavailable."); expect(screen.getByRole("button", { name: "Submit Feedback" }).closest("fieldset").disabled).toBe(true);
 });

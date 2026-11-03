@@ -20,6 +20,12 @@ import Profile from "./pages/profile/Profile";
 import Notifications from "./pages/notifications/Notifications";
 import { NotificationProvider } from "./context/NotificationContext";
 import { Departments, Hods, Faculty, Students, Subjects, Classes, FacultyAssignments, MyAssignments } from "./pages/academic/AcademicPages";
+import StudentGeneralFeedback from "./pages/student/GeneralFeedback";
+import StudentSuggestions from "./pages/student/Suggestions";
+import FacultyGeneralFeedback from "./pages/faculty/GeneralFeedback";
+import FacultySuggestions from "./pages/faculty/Suggestions";
+import DepartmentGeneralFeedback from "./pages/hod/GeneralFeedback";
+import FeedbackOverview from "./pages/principal/FeedbackOverview";
 
 const SharedRoleLayout = () => {
   const { user } = useAuth();
@@ -45,11 +51,13 @@ const App = () => {
         </Route>
         <Route element={<ProtectedRoute expectedRole="PRINCIPAL"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/departments" element={<Departments />} /><Route path="/hods" element={<Hods />} />
+          <Route path="/principal/feedback-overview" element={<FeedbackOverview />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="HOD"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/faculty" element={<Faculty />} /><Route path="/students" element={<Students />} />
           <Route path="/subjects" element={<Subjects />} /><Route path="/classes" element={<Classes />} />
           <Route path="/faculty-assignments" element={<FacultyAssignments />} />
+          <Route path="/hod/general-feedback" element={<DepartmentGeneralFeedback />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="FACULTY"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/my-assignments" element={<MyAssignments />} />
@@ -57,10 +65,14 @@ const App = () => {
           <Route path="/my-sessions/new" element={<SessionEditor />} />
           <Route path="/my-sessions/:sessionId/edit" element={<SessionEditor />} />
           <Route path="/my-sessions/:sessionId/results" element={<SessionResults />} />
+          <Route path="/faculty/general-feedback" element={<FacultyGeneralFeedback />} />
+          <Route path="/faculty/suggestions" element={<FacultySuggestions />} />
         </Route>
         <Route element={<ProtectedRoute expectedRole="STUDENT"><SharedRoleLayout /></ProtectedRoute>}>
           <Route path="/feedback-sessions" element={<FeedbackSessions />} />
           <Route path="/feedback-sessions/:sessionId/respond" element={<SessionQuestionnaire />} />
+          <Route path="/student/general-feedback" element={<StudentGeneralFeedback />} />
+          <Route path="/student/suggestions" element={<StudentSuggestions />} />
         </Route>
 
         <Route

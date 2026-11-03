@@ -432,6 +432,10 @@ a {
 .result-bar-fill { height: 100%; background: var(--cv-primary); }
 .short-answer-card { padding: 1rem; border: 1px solid var(--cv-border); border-radius: var(--cv-radius); }
 .result-answer-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-page, .message-list { min-width: 0; overflow-wrap: anywhere; }
+.message-page fieldset { min-width: 0; }
+.message-page select, .message-page textarea { min-width: 0; max-width: 100%; }
+.message-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .auth-panel {
   width: 100%;
